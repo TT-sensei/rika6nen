@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>1. 物の燃え方と空気 - 理科アプリ</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        /* unit1専用のスタイル */
+        .experiment-box {
+            background: #fff;
+            padding: 20px;
+            border-radius: 10px;
+            max-width: 600px;
+            margin: 0 auto;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+        .jar {
+            width: 150px;
+            height: 200px;
+            border: 4px solid #b0c4de;
+            border-top: none;
+            border-radius: 0 0 20px 20px;
+            margin: 40px auto 20px;
+            position: relative;
+            background: rgba(240, 248, 255, 0.5);
+        }
+        .lid {
+            width: 160px;
+            height: 20px;
+            background: #8b4513;
+            position: absolute;
+            top: -24px;
+            left: -9px;
+            border-radius: 5px;
+            transition: top 0.3s;
+        }
+        .lid.open {
+            top: -60px; /* フタが開いている状態 */
+        }
+        .candle {
+            font-size: 80px;
+            position: absolute;
+            bottom: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+            transition: opacity 0.3s;
+        }
+        .meters {
+            display: flex;
+            justify-content: space-around;
+            margin-bottom: 20px;
+            font-size: 1.2rem;
+            font-weight: bold;
+        }
+        .meter-o2 { color: #e74c3c; }
+        .meter-co2 { color: #34495e; }
+        .controls button {
+            padding: 10px 20px;
+            font-size: 1rem;
+            margin: 5px;
+            cursor: pointer;
+            border-radius: 5px;
+            border: none;
+            background-color: #3498db;
+            color: white;
+            font-weight: bold;
+        }
+        .controls button:hover { background-color: #2980b9; }
+        #message {
+            font-size: 1.2rem;
+            color: #d35400;
+            height: 30px;
+            margin-bottom: 10px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>🔥 1. 物の燃え方と空気</h1>
+        <p>フタを閉めると、びんの中の空気はどうなるかな？</p>
+    </header>
+
+    <main>
+        <div class="experiment-box">
+            <div id="message">ミッション：火をできるだけ長く燃やそう！</div>
+            
+            <div class="meters">
+                <div class="meter-o2">酸素 (O₂): <span id="o2-val">21.0</span> %</div>
+                <div class="meter-co2">二酸化炭素 (CO₂): <span id="co2-val">0.04</span> %</div>
+            </div>
+
+            <div class="jar">
+                <div id="lid" class="lid open"></div>
+                <div id="candle" class="candle">🕯️</div>
+            </div>
+
+            <div class="controls">
+                <button onclick="toggleLid()" id="lid-btn">フタを閉める</button>
+                <button onclick="resetExperiment()" style="background-color: #95a5a6;">リセット</button>
+            </div>
+            
+            <div style="margin-top: 20px;">
+                <a href="index.html" style="color: #4CAF50; text-decoration: none;">← メニューに戻る</a>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        // 実験のデータ
+        let o2 = 21.0;
+        let co2 = 0.04;
+        let isLidClosed = false;
+        let isBurning = true;
+        let timer;
+
+        const o2Display = document.getElementById('o2-val');
+        const co2Display = document.getElementById('co2-val');
+        const lidElement = document.getElementById('lid');
+        const lidBtn = document.getElementById('lid-btn');
+        const candleElement = document.getElementById('candle');
+        const messageBox = document.getElementById('message');
+
+        // フタの開け閉めボタン
+        function toggleLid() {
+            isLidClosed = !isLidClosed;
+            if (isLidClosed) {
+                lidElement.classList.remove('open');
+                lidBtn.innerText = "フタを開ける";
+                messageBox.innerText = "フタを閉めた！メーターに注目！";
+            } else {
+                lidElement.classList.add('open');
+                lidBtn.innerText = "フタを閉める";
+                if (isBurning) {
+                    messageBox.innerText = "空気が入れ替わった！";
+                    // フタを開けたら空気が元に戻る
+                    o2 = 21.0;
+                    co2 = 0.04;
+                    updateMeters();
+                }
+            }
+        }
+
+        // 実験のメインループ（1秒ごとに実行）
+        function gameLoop() {
+            if (isBurning && isLidClosed) {
+                // 燃えると酸素が減り、二酸化炭素が増える
+                o2 -= 0.8;
+                co2 += 0.8;
+                
+                // 酸素が15%以下になると火が消える（理科の重要ポイント！）
+                if (o2 <= 15.0) {
+                    isBurning = false;
+                    candleElement.innerText = "💨"; // 煙の絵文字に変更
+                    messageBox.innerText = "【実験終了】酸素が減って火が消えた！";
+                }
+                updateMeters();
+            }
+        }
+
+        // メーターの表示を更新
+        function updateMeters() {
+            o2Display.innerText = o2.toFixed(1);
+            co2Display.innerText = co2.toFixed(2);
+        }
+
+        // 実験を最初からやり直す
+        function resetExperiment() {
+            o2 = 21.0;
+            co2 = 0.04;
+            isLidClosed = false;
+            isBurning = true;
+            lidElement.classList.add('open');
+            lidBtn.innerText = "フタを閉める";
+            candleElement.innerText = "🕯️";
+            messageBox.innerText = "ミッション：火をできるだけ長く燃やそう！";
+            updateMeters();
+        }
+
+        // 1秒に1回 gameLoop を実行する
+        timer = setInterval(gameLoop, 1000);
+    </script>
+</body>
+</html>
