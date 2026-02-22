@@ -17,7 +17,6 @@
             justify-content: center;
             align-items: center;
             min-height: 100vh;
-            /* 改善④：スマホでのテキスト選択やハイライトを無効化 */
             user-select: none;
             -webkit-user-select: none;
         }
@@ -66,20 +65,12 @@
             font-family: 'Yusei Magic', sans-serif;
             width: 80%;
             max-width: 300px;
-            /* 改善④：スマホのダブルタップズーム防止とタップ遅延解消 */
             touch-action: manipulation;
         }
 
         .btn:active:not(:disabled) {
             transform: translateY(5px);
             box-shadow: none;
-        }
-
-        .btn:disabled {
-            background-color: #bdbdbd;
-            box-shadow: 0 5px 0 #9e9e9e;
-            cursor: not-allowed;
-            transform: none;
         }
 
         .btn-option {
@@ -112,7 +103,6 @@
             cursor: pointer;
             transition: transform 0.2s;
             width: 80%;
-            /* 改善④：タップしやすく */
             touch-action: manipulation;
         }
 
@@ -153,7 +143,7 @@
     <div id="screen-title" class="screen active">
         <div class="character">🚁🔬</div>
         <h1>ミクロ探検隊！<br>からだのふしぎツアー</h1>
-        <p>キミは探検船の船長だ！<br>体のすみずみまで探検して、すべてのミッションをクリアしよう！</p>
+        <p>毎回問題が変わるぞ！<br>体のすみずみまで探検して、すべてのミッションをクリアしよう！</p>
         <button class="btn" onclick="startGame()">探検スタート！</button>
     </div>
 
@@ -163,7 +153,7 @@
         <div id="stage-list"></div>
         
         <div id="review-area" style="margin-top: 20px; display: none;">
-            <p style="color: #d32f2f; font-weight: bold;">⚠️ 未解決のミッション（間違えた問題）があります！</p>
+            <p style="color: #d32f2f; font-weight: bold;">⚠️ 未解決のミッションがあります！</p>
             <button class="btn btn-review" onclick="startReview()">🔥 弱点克服モードへ</button>
         </div>
         <div id="result-area" style="margin-top: 20px; display: none;">
@@ -193,15 +183,11 @@
 </div>
 
 <script>
-    // --- 改善②：効果音の準備 ---
     const correctSound = new Audio('https://assets.mixkit.co/active_storage/sfx/2013/2013-preview.mp3');
     const wrongSound = new Audio('https://assets.mixkit.co/active_storage/sfx/2019/2019-preview.mp3');
-    
-    // 音量調整（少し控えめに）
     correctSound.volume = 0.5;
     wrongSound.volume = 0.5;
 
-    // --- データ定義 ---
     const stages = [
         {
             id: 'shoka', name: '🍖 消化の洞窟', icon: '👄', cleared: false,
@@ -243,23 +229,27 @@
 
     let score = 0;
     let maxScore = 0;
-    
-    // 現在解いている問題リスト（通常 or 復習）
     let currentQuestions = [];
     let currentStageName = "";
     let currentStageIcon = "";
     let currentQuestionIndex = 0;
-    
-    // 改善③：間違えた問題リスト
     let wrongQuestions = [];
     let isReviewMode = false;
-    let isAnswering = false; // 改善④：連打防止フラグ
+    let isAnswering = false;
+
+    // ★追加機能：配列をランダムに並び替える関数（フィッシャー・イェーツのシャッフル）
+    function shuffleArray(array) {
+        for (let i = array.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [array[i], array[j]] = [array[j], array[i]];
+        }
+        return array;
+    }
 
     function startGame() {
         score = 0;
         wrongQuestions = [];
         maxScore = stages.reduce((sum, stage) => sum + stage.questions.length, 0) * 10;
-        
         updateScore();
         document.getElementById('status-bar').style.display = 'flex';
         renderMap();
@@ -273,21 +263,17 @@
 
         stages.forEach((stage, index) => {
             const div = document.createElement('div');
-            // 改善①：クリア後もタップできるように変更
             div.className = `stage-card ${stage.cleared ? 'cleared' : ''}`;
             div.innerHTML = `<h3>${stage.name}</h3><p>${stage.cleared ? '🔁 もう一度特訓する' : '👉 タップして特訓開始！'}</p>`;
             div.onclick = () => startStage(index);
             stageList.appendChild(div);
-            
             if (!stage.cleared) allCleared = false;
         });
 
-        // 全エリアクリア後の表示制御
         document.getElementById('review-area').style.display = 'none';
         document.getElementById('result-area').style.display = 'none';
 
         if (allCleared) {
-            // 改善③：間違えた問題があれば復習ボタン、なければ結果ボタンを表示
             if (wrongQuestions.length > 0) {
                 document.getElementById('review-area').style.display = 'block';
             } else {
@@ -301,7 +287,9 @@
         const stage = stages[index];
         currentStageName = stage.name;
         currentStageIcon = stage.icon;
-        currentQuestions = stage.questions; // そのステージの全問題をセット
+        
+        // ★変更：問題の順番をシャッフルしてセットする
+        currentQuestions = shuffleArray([...stage.questions]);
         currentQuestionIndex = 0;
         
         document.getElementById('current-area-display').innerText = `エリア: ${currentStageName}`;
@@ -309,13 +297,13 @@
         showScreen('screen-quiz');
     }
 
-    // 改善③：弱点克服（復習）モードの開始
     function startReview() {
         isReviewMode = true;
         currentStageName = "🔥 弱点克服モード";
         currentStageIcon = "💪";
-        // 間違えた問題を現在の問題リストにコピーし、元のリストは空にする（再度間違えたら追加するため）
-        currentQuestions = [...wrongQuestions]; 
+        
+        // ★変更：間違えた問題の順番もシャッフルする
+        currentQuestions = shuffleArray([...wrongQuestions]); 
         wrongQuestions = [];
         currentQuestionIndex = 0;
         
@@ -325,59 +313,67 @@
     }
 
     function showQuestion() {
-        isAnswering = false; // 連打防止解除
+        isAnswering = false;
         const qData = currentQuestions[currentQuestionIndex];
         
         document.getElementById('quiz-icon').innerText = currentStageIcon;
-        document.getElementById('question-text').innerText = `Q${currentQuestionIndex + 1}: ${qData.q}`;
+        // 何問目か（1/4 のような形式に変更）
+        document.getElementById('question-text').innerText = `Q${currentQuestionIndex + 1}/${currentQuestions.length}: ${qData.q}`;
         document.getElementById('explanation').style.display = 'none';
         document.getElementById('options-container').style.display = 'block';
 
         const optionsContainer = document.getElementById('options-container');
         optionsContainer.innerHTML = '';
 
-        qData.options.forEach((opt, i) => {
+        // ★変更：選択肢をシャッフルする処理
+        // 元の答えのインデックス（番号）を保持したまま配列を作る
+        let optionsWithIndex = qData.options.map((opt, index) => {
+            return { text: opt, originalIndex: index };
+        });
+
+        // 選択肢の配列をシャッフル
+        optionsWithIndex = shuffleArray(optionsWithIndex);
+
+        // シャッフルされた選択肢でボタンを生成
+        optionsWithIndex.forEach((optObj) => {
             const btn = document.createElement('button');
             btn.className = 'btn btn-option';
-            btn.innerText = opt;
-            btn.onclick = () => checkAnswer(i);
+            btn.innerText = optObj.text;
+            // 回答チェック時には、シャッフル前の元のインデックスを渡す
+            btn.onclick = () => checkAnswer(optObj.originalIndex);
             optionsContainer.appendChild(btn);
         });
     }
 
-    function checkAnswer(selectedIndex) {
-        if (isAnswering) return; // 改善④：すでに答えている場合は処理しない
+    function checkAnswer(selectedOriginalIndex) {
+        if (isAnswering) return;
         isAnswering = true;
 
         const qData = currentQuestions[currentQuestionIndex];
-        const isCorrect = (selectedIndex === qData.ans);
+        
+        // 元のインデックスと正解のインデックスを比較する
+        const isCorrect = (selectedOriginalIndex === qData.ans);
         
         document.getElementById('options-container').style.display = 'none';
         const expDiv = document.getElementById('explanation');
         expDiv.style.display = 'block';
 
         if (isCorrect) {
-            // 改善②：正解音を鳴らす
             correctSound.currentTime = 0;
             correctSound.play().catch(e => console.log("音の再生がブロックされました"));
-            
             document.getElementById('result-title').innerHTML = '⭕ 大正解！';
             document.getElementById('result-title').style.color = '#2e7d32';
             
-            // ポイント加算（通常モードの初回正解時のみ加算など工夫できますが、今回はシンプルに正解で加算）
             if (!isReviewMode) {
                 score += 10;
                 updateScore();
             }
         } else {
-            // 改善②：不正解音を鳴らす
             wrongSound.currentTime = 0;
             wrongSound.play().catch(e => console.log("音の再生がブロックされました"));
-            
             document.getElementById('result-title').innerHTML = '❌ おしい！';
             document.getElementById('result-title').style.color = '#c62828';
 
-            // 改善③：間違えた問題を配列に追加（重複しないように）
             if (!wrongQuestions.some(q => q.q === qData.q)) {
                 wrongQuestions.push(qData);
             }
@@ -391,16 +387,13 @@
         if (currentQuestionIndex < currentQuestions.length) {
             showQuestion();
         } else {
-            // ステージ終了処理
             if (!isReviewMode) {
-                // 通常ステージの場合はクリアフラグを立てる
                 const stageIndex = stages.findIndex(s => s.name === currentStageName);
                 if(stageIndex !== -1) stages[stageIndex].cleared = true;
                 alert(`${currentStageName} の調査が完了した！`);
             } else {
                 alert(`弱点克服モード終了！`);
             }
-            
             document.getElementById('current-area-display').innerText = `エリア: マップ`;
             renderMap();
             showScreen('screen-map');
@@ -413,8 +406,6 @@
 
     function showFinalResult() {
         document.getElementById('status-bar').style.display = 'none';
-        
-        // 最終スコアは「最大スコア - (最後に残った間違えた問題数 * 10)」で計算すると正確
         const finalCalculatedScore = maxScore - (wrongQuestions.length * 10);
         document.getElementById('final-score').innerText = finalCalculatedScore;
         document.getElementById('max-score-display').innerText = maxScore;
