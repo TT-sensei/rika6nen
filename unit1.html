@@ -21,7 +21,6 @@
             background: linear-gradient(45deg, #8e44ad, #2980b9); border: 3px solid #fff; border-radius: 8px; cursor: pointer;
             transition: transform 0.1s, background 0.2s, border-color 0.2s;
         }
-        /* 改善②：disabledでない時だけhoverを有効化 */
         .btn:hover:not(:disabled) { transform: scale(1.02); background: linear-gradient(45deg, #9b59b6, #3498db); }
         .btn:active:not(:disabled) { transform: scale(0.95); }
         .btn:disabled { transform: none; cursor: not-allowed; opacity: 0.9; }
@@ -101,7 +100,6 @@
 </div>
 
 <script>
-    // 改善⑤：スマホ等の音声再生ブロック対策（初回タップ時にAudioContextを起動）
     document.body.addEventListener('click', () => {
         if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume();
     }, { once: true });
@@ -121,7 +119,8 @@
         advanced: [
             { stageTitle: "第1幕：燃える前と後の空気", visual: "📏 👁️ 💨", situation: "『気体検知管』で調べると、燃える前の酸素は約21%だった。", question: "ものが燃えた後、酸素の割合はどうなった？", choices: ["約21%で変わらない", "約17%に減った", "約30%に増えた"], correctIndex: 1, explanation: "ものが燃えると、空気中の酸素の一部が使われて【減る】のじゃ。" },
             { stageTitle: "第2幕：増えた気体の正体", visual: "📈 💨 ❓", situation: "酸素が減った代わりに、燃える前は0.04%だった「ある気体」が増えたぞ。", question: "増えた気体は何だ？", choices: ["水蒸気", "ちっ素", "二酸化炭素"], correctIndex: 2, explanation: "ものが燃えると酸素が使われ、代わりに【二酸化炭素】ができるのじゃ。" },
-            { stageTitle: "最終幕：大魔王 煙スモッグ襲来！", visual: "🐉👿🔥", situation: "ボス「ガハハ！俺を倒したくば、究極の謎を解いてみろ！」", question: "木が燃え続けるために【必要ない】ものはどれだ？", choices: ["たえず入れかわる空気（酸素）", "燃えるもの（木）", "ちっ素"], correctIndex: 2, explanation: "燃焼に必要なのは「燃えるもの」「酸素」「発火点以上の温度」じゃ。ちっ素は関係ないぞ！ボスの撃破じゃ！", isBoss: true }
+            // 新しいボス問題に差し替え！
+            { stageTitle: "最終幕：大魔王 煙スモッグの究極の謎！", visual: "🐉👿🔥", situation: "ボス「ガハハ！火が消えたということは、ビンの中の酸素は『ゼロ（0%）』になったということだな！？」", question: "火が消えたあとのビンの中の空気で、正しいのはどれだ？", choices: ["酸素は完全にゼロになっている", "酸素はまだ残っている（約17%）", "すべて二酸化炭素に変わっている"], correctIndex: 1, explanation: "大正解！火が消えても酸素は「ゼロ」にはならないんじゃ！約21%だった酸素が約17%に減るだけで、まだ残っているのが最大のポイントじゃぞ！ボス撃破！", isBoss: true }
         ]
     };
 
@@ -170,7 +169,6 @@
     function initGame(level) {
         if(audioCtx.state === 'suspended') audioCtx.resume();
         
-        // 改善①：変数の完全リセット（SPA用）
         currentQuestionIndex = 0;
         score = 0;
         combo = 0;
@@ -183,12 +181,12 @@
 
         currentLevel = level;
         
-        // 改善③：ボス問題を除いてランダム化
+        // 問題の順番をランダム化
         const questions = [...allQuizData[level]];
         const normalQuestions = questions.filter(q => !q.isBoss);
         const bossQuestion = questions.find(q => q.isBoss);
         
-        normalQuestions.sort(() => Math.random() - 0.5); // 通常問題のみシャッフル
+        normalQuestions.sort(() => Math.random() - 0.5); 
         quizData = bossQuestion ? [...normalQuestions, bossQuestion] : [...normalQuestions];
         
         ui.titleScreen.classList.add('hidden');
@@ -198,7 +196,6 @@
     }
 
     function returnToTitle() {
-        // タイトルへ戻る処理
         ui.gameScreen.classList.add('hidden');
         ui.resultScreen.classList.add('hidden');
         ui.titleScreen.classList.remove('hidden');
@@ -211,7 +208,6 @@
         ui.gameScreen.classList.remove('shake');
         
         const q = quizData[currentQuestionIndex];
-        // ボス戦がある場合は表記を少し変える
         ui.stageDisplay.textContent = q.isBoss ? `最終幕！` : `第${currentQuestionIndex + 1}幕 / 全${quizData.length}幕`;
         
         ui.stageTitle.textContent = q.stageTitle;
@@ -230,7 +226,12 @@
             ui.visualArea.classList.remove('boss-shake');
         }
 
-        q.choices.forEach((choice, index) => {
+        // --- 選択肢のランダム化処理 ---
+        const correctAnswerText = q.choices[q.correctIndex]; // 正解のテキストを記憶
+        const shuffledChoices = [...q.choices].sort(() => Math.random() - 0.5); // 選択肢をシャッフル
+        q.currentCorrectIndex = shuffledChoices.indexOf(correctAnswerText); // シャッフル後の正解の場所を記録
+
+        shuffledChoices.forEach((choice, index) => {
             const button = document.createElement('button');
             button.className = 'btn'; button.textContent = choice;
             button.onclick = () => checkAnswer(index);
@@ -263,17 +264,17 @@
     function checkAnswer(selectedIndex) {
         clearInterval(timerInterval);
         const q = quizData[currentQuestionIndex];
+        const correctIndex = q.currentCorrectIndex; // シャッフル後の正解インデックスを使用
         const buttons = ui.choicesContainer.querySelectorAll('button');
 
-        // 改善④：タイムアップ時（-1）でも正解を緑色でハイライトする
         buttons.forEach((btn, index) => {
             btn.disabled = true;
             btn.style.background = "#7f8c8d"; btn.style.borderColor = "#95a5a6";
-            if (index === q.correctIndex) { btn.style.background = "#27ae60"; btn.style.borderColor = "#2ecc71"; }
-            if (index === selectedIndex && index !== q.correctIndex) { btn.style.background = "#c0392b"; btn.style.borderColor = "#e74c3c"; }
+            if (index === correctIndex) { btn.style.background = "#27ae60"; btn.style.borderColor = "#2ecc71"; }
+            if (index === selectedIndex && index !== correctIndex) { btn.style.background = "#c0392b"; btn.style.borderColor = "#e74c3c"; }
         });
 
-        if (selectedIndex === q.correctIndex) {
+        if (selectedIndex === correctIndex) {
             combo++; ui.comboDisplay.textContent = `🔥 ${combo} コンボ!`; ui.comboDisplay.classList.remove('hidden');
             const points = 100 + (timeLeft * 10) + (combo * 20);
             animateScore(score + points); score += points;
