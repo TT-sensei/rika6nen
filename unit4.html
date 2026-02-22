@@ -18,7 +18,7 @@
             background-color: #fdfbf7;
             border-radius: 15px;
             box-shadow: 0 10px 20px rgba(0,0,0,0.3);
-            max-width: 800px;
+            max-width: 900px;
             width: 100%;
             padding: 20px;
             border: 4px solid #8e44ad;
@@ -44,7 +44,7 @@
             gap: 20px;
             margin-bottom: 20px;
         }
-        @media (max-width: 600px) {
+        @media (max-width: 700px) {
             .flex-area { flex-direction: column; }
         }
         .tools-area, .log-area {
@@ -59,23 +59,35 @@
             margin-top: 0;
             text-align: center;
         }
+        .tool-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+        @media (max-width: 500px) {
+            .tool-grid { grid-template-columns: 1fr; }
+        }
         .btn-tool {
-            display: block;
             width: 100%;
             background-color: #3498db;
             color: white;
             border: none;
             padding: 10px;
-            margin-bottom: 10px;
             border-radius: 5px;
-            font-size: 16px;
+            font-size: 14px;
             cursor: pointer;
             transition: background 0.2s;
+            font-weight: bold;
         }
-        .btn-tool:hover { background-color: #2980b9; }
+        .btn-tool:hover:not(:disabled) { background-color: #2980b9; }
+        .btn-tool:disabled {
+            background-color: #95a5a6;
+            cursor: not-allowed;
+            opacity: 0.8;
+        }
         
         #investigation-log {
-            height: 250px;
+            height: 350px;
             overflow-y: auto;
             background: white;
             border: 1px solid #bdc3c7;
@@ -118,16 +130,26 @@
             padding: 20px;
             margin-top: 20px;
             border-radius: 8px;
-            font-size: 18px;
-            font-weight: bold;
+            font-size: 16px;
+            line-height: 1.6;
+        }
+        .evidence-summary {
+            background-color: rgba(255,255,255,0.7);
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 15px;
+            text-align: left;
+            display: inline-block;
+            width: 80%;
         }
         .btn-restart {
-            margin-top: 15px;
+            margin-top: 20px;
             background-color: #27ae60;
             color: white;
             border: none;
-            padding: 10px 20px;
+            padding: 12px 24px;
             font-size: 16px;
+            font-weight: bold;
             border-radius: 5px;
             cursor: pointer;
         }
@@ -140,25 +162,34 @@
     <h1>🔍 理科室の探偵！謎の液体X</h1>
     <div class="story-box" id="story-text">
         探偵長！ラベルのはがれた「謎の液体X」が見つかりました。<br>
-        調査ツールを使って証拠を集め、正体を当ててください！
+        調査ツールを使って証拠を集め、正体を当ててください！<br>
+        <span style="font-size: 0.9em; color: #e74c3c;">※優秀な探偵ほど、少ない調査回数で正体をあばくぞ！</span>
     </div>
 
     <div class="flex-area">
         <div class="tools-area">
             <h2>🧪 調査ツール</h2>
-            <button class="btn-tool" onclick="investigate('appearance')">👁️ 見た目を観察する</button>
-            <button class="btn-tool" onclick="investigate('smell')">👃 においをかぐ</button>
-            <button class="btn-tool" onclick="investigate('litmus')">📄 リトマス紙をつける</button>
-            <button class="btn-tool" onclick="investigate('metal_al')">🔩 アルミニウムを入れる</button>
-            <button class="btn-tool" onclick="investigate('metal_fe')">🔩 鉄を入れる</button>
-            <button class="btn-tool" onclick="investigate('evaporate')">🔥 熱して蒸発させる</button>
-            <button class="btn-tool" onclick="investigate('limewater')">💧 石灰水を混ぜる</button>
+            <div class="tool-grid">
+                <button class="btn-tool" onclick="investigate('appearance', this)">👁️ 見た目を観察する</button>
+                <button class="btn-tool" onclick="investigate('smell', this)">👃 においを手であおいで調べる</button>
+                <button class="btn-tool" onclick="investigate('litmus', this)">📄 リトマス紙をつける</button>
+                <button class="btn-tool" onclick="investigate('btb', this)">🧪 BTB液を入れる</button>
+                <button class="btn-tool" onclick="investigate('phenolphthalein', this)">💧 フェノールフタレイン液</button>
+                <button class="btn-tool" onclick="investigate('electricity', this)">⚡ 電気を通すか調べる</button>
+                <button class="btn-tool" onclick="investigate('metal_al', this)">🔩 アルミニウムを入れる</button>
+                <button class="btn-tool" onclick="investigate('metal_fe', this)">🔩 鉄を入れる</button>
+                <button class="btn-tool" onclick="investigate('evaporate', this)">🔥 熱して蒸発させる</button>
+                <button class="btn-tool" onclick="investigate('limewater', this)">🌫️ 石灰水を混ぜる</button>
+            </div>
         </div>
 
         <div class="log-area">
             <h2>📝 探偵メモ（証拠）</h2>
             <div id="investigation-log">
-                <div style="color:#7f8c8d;">まだ調査は行われていません。</div>
+                <div style="color:#7f8c8d;" id="log-placeholder">まだ調査は行われていません。</div>
+            </div>
+            <div style="text-align: right; margin-top: 10px; font-weight: bold; color: #e74c3c;">
+                現在の調査回数：<span id="investigation-count">0</span>回
             </div>
         </div>
     </div>
@@ -176,13 +207,30 @@
 </div>
 
 <script>
-    // 6つの水溶液のデータ（教科書に基づいた設定）
+    // ツール名の一覧（証拠まとめ用）
+    const toolNames = {
+        'appearance': '見た目',
+        'smell': 'におい',
+        'litmus': 'リトマス紙',
+        'btb': 'BTB液',
+        'phenolphthalein': 'フェノールフタレイン液',
+        'electricity': '電気を通すか',
+        'metal_al': 'アルミニウム',
+        'metal_fe': '鉄',
+        'evaporate': '蒸発',
+        'limewater': '石灰水'
+    };
+
+    // 6つの水溶液のデータ（安全性と発展学習を考慮）
     const solutions = [
         {
             id: "ensan", name: "塩酸",
             appearance: "無色とうめいだ。",
-            smell: "つんとしたにおいがする！",
-            litmus: "青色のリトマス紙が赤色になった！（酸性だ）",
+            smell: "手であおぐと、つんとしたにおいがする！",
+            litmus: "青色のリトマス紙が赤色になった！（酸性）",
+            btb: "黄色になった！（酸性）",
+            phenolphthalein: "変化なし。（無色）",
+            electricity: "豆電球が明るく点灯した！（電気を通す）",
             metal_al: "あわを出してとけた！",
             metal_fe: "あわを出してとけた！",
             evaporate: "何も残らない。気体がとけているようだ。",
@@ -192,8 +240,11 @@
         {
             id: "tansansui", name: "炭酸水",
             appearance: "無色とうめいだが、小さなあわが出ている！",
-            smell: "とくににおいはしない。",
-            litmus: "青色のリトマス紙が赤色になった！（酸性だ）",
+            smell: "手であおいでかいだが、とくににおいはしない。",
+            litmus: "青色のリトマス紙が赤色になった！（酸性）",
+            btb: "黄色になった！（酸性）",
+            phenolphthalein: "変化なし。（無色）",
+            electricity: "豆電球が点灯した！（電気を通す）",
             metal_al: "変化なし。（とけない）",
             metal_fe: "変化なし。（とけない）",
             evaporate: "何も残らない。気体がとけているようだ。",
@@ -203,8 +254,11 @@
         {
             id: "shokuensui", name: "食塩水",
             appearance: "無色とうめいだ。",
-            smell: "とくににおいはしない。",
-            litmus: "どちらのリトマス紙も変化なし。（中性だ）",
+            smell: "手であおいでかいだが、とくににおいはしない。",
+            litmus: "どちらのリトマス紙も変化なし。（中性）",
+            btb: "緑色になった！（中性）",
+            phenolphthalein: "変化なし。（無色）",
+            electricity: "豆電球が明るく点灯した！（電気を通す）",
             metal_al: "変化なし。（とけない）",
             metal_fe: "変化なし。（とけない）",
             evaporate: "白いものが残った！固体がとけているようだ。",
@@ -214,8 +268,11 @@
         {
             id: "ammonia", name: "アンモニア水",
             appearance: "無色とうめいだ。",
-            smell: "つんとしたにおいがする！",
-            litmus: "赤色のリトマス紙が青色になった！（アルカリ性だ）",
+            smell: "手であおぐと、つんとしたにおいがする！",
+            litmus: "赤色のリトマス紙が青色になった！（アルカリ性）",
+            btb: "青色になった！（アルカリ性）",
+            phenolphthalein: "赤色になった！（アルカリ性）",
+            electricity: "豆電球が点灯した！（電気を通す）",
             metal_al: "変化なし。（とけない）",
             metal_fe: "変化なし。（とけない）",
             evaporate: "何も残らない。気体がとけているようだ。",
@@ -225,19 +282,25 @@
         {
             id: "sekkausui", name: "石灰水",
             appearance: "無色とうめいだ。",
-            smell: "とくににおいはしない。",
-            litmus: "赤色のリトマス紙が青色になった！（アルカリ性だ）",
+            smell: "手であおいでかいだが、とくににおいはしない。",
+            litmus: "赤色のリトマス紙が青色になった！（アルカリ性）",
+            btb: "青色になった！（アルカリ性）",
+            phenolphthalein: "赤色になった！（アルカリ性）",
+            electricity: "豆電球が点灯した！（電気を通す）",
             metal_al: "変化なし。（とけない）",
             metal_fe: "変化なし。（とけない）",
             evaporate: "白いものが残った！固体がとけているようだ。",
             limewater: "変化なし。",
-            desc: "においのないアルカリ性で、金属をとかさないのは「石灰水」だね！（※アルミニウムをとかす水酸化ナトリウム水溶液との違いに注意！）"
+            desc: "においのないアルカリ性で、金属をとかさないのは「石灰水」だね！"
         },
         {
             id: "suisanka", name: "水酸化ナトリウム水溶液",
             appearance: "無色とうめいだ。",
-            smell: "とくににおいはしない。",
-            litmus: "赤色のリトマス紙が青色になった！（アルカリ性だ）",
+            smell: "手であおいでかいだが、とくににおいはしない。",
+            litmus: "赤色のリトマス紙が青色になった！（アルカリ性）",
+            btb: "青色になった！（アルカリ性）",
+            phenolphthalein: "赤色になった！（アルカリ性）",
+            electricity: "豆電球が明るく点灯した！（電気を通す）",
             metal_al: "あわを出してとけた！",
             metal_fe: "変化なし。（とけない）",
             evaporate: "白いものが残った！固体がとけているようだ。",
@@ -248,18 +311,27 @@
 
     let targetSolution = null;
     let investigatedTools = [];
+    let investigationCount = 0; // 調査回数をカウント
 
-    // ゲームの初期化（ランダムに答えを選ぶ）
+    // ゲームの初期化
     function initGame() {
         // ランダムにターゲットを1つ決定
         const randomIndex = Math.floor(Math.random() * solutions.length);
         targetSolution = solutions[randomIndex];
         investigatedTools = [];
+        investigationCount = 0;
 
-        // UIのリセット
-        document.getElementById('investigation-log').innerHTML = '<div style="color:#7f8c8d;">まだ調査は行われていません。</div>';
+        // UIとボタンのリセット
+        document.getElementById('investigation-log').innerHTML = '<div style="color:#7f8c8d;" id="log-placeholder">まだ調査は行われていません。</div>';
+        document.getElementById('investigation-count').innerText = investigationCount;
         document.getElementById('result-area').style.display = 'none';
         document.getElementById('inference-area').style.display = 'block';
+
+        // すべての調査ボタンを再び有効化する
+        const toolBtns = document.querySelectorAll('.btn-tool');
+        toolBtns.forEach(btn => {
+            btn.disabled = false;
+        });
 
         // 推理ボタンの生成
         const suspectContainer = document.getElementById('suspect-container');
@@ -278,39 +350,36 @@
     }
 
     // 調査ツールを使ったときの処理
-    function investigate(toolKey) {
-        const logArea = document.getElementById('investigation-log');
-        
+    function investigate(toolKey, btn) {
+        // すでに同じ調査をしていたら無視する
+        if (investigatedTools.includes(toolKey)) return;
+
         // 初めての調査のとき、プレースホルダーを消す
         if (investigatedTools.length === 0) {
-            logArea.innerHTML = '';
-        }
-
-        // すでに同じ調査をしていたら無視する
-        if (investigatedTools.includes(toolKey)) {
-            return;
+            document.getElementById('log-placeholder').style.display = 'none';
         }
 
         investigatedTools.push(toolKey);
-        const resultText = targetSolution[toolKey];
-        
-        // 調査名を表示用に変換
-        const toolNames = {
-            'appearance': '👁️ 見た目',
-            'smell': '👃 におい',
-            'litmus': '📄 リトマス紙',
-            'metal_al': '🔩 アルミニウム',
-            'metal_fe': '🔩 鉄',
-            'evaporate': '🔥 蒸発',
-            'limewater': '💧 石灰水'
-        };
+        investigationCount++; // 調査回数をプラス
+        document.getElementById('investigation-count').innerText = investigationCount;
 
+        // ボタンを無効化（グレーアウト）
+        btn.disabled = true;
+
+        const resultText = targetSolution[toolKey];
+        const logArea = document.getElementById('investigation-log');
         const logHTML = `<div class="log-item">【${toolNames[toolKey]}】<br><span>${resultText}</span></div>`;
         logArea.insertAdjacentHTML('afterbegin', logHTML);
     }
 
     // 推理（解答）したときの処理
     function guess(guessedId) {
+        // 最低1回は調査していないと推理できない
+        if (investigatedTools.length === 0) {
+            alert("まだ証拠がありません！上のツールから調査をしてから推理しよう！");
+            return;
+        }
+
         const resultArea = document.getElementById('result-area');
         const resultMessage = document.getElementById('result-message');
         const inferenceArea = document.getElementById('inference-area');
@@ -319,18 +388,38 @@
         resultArea.style.display = 'block';   // 結果エリアを表示
 
         if (guessedId === targetSolution.id) {
-            // 正解
+            // 正解時の証拠まとめを作成
+            let evidence = `<div class="evidence-summary"><strong>【キミが集めた証拠まとめ】</strong><br>`;
+            investigatedTools.forEach(tool => {
+                evidence += `・${toolNames[tool]}： ${targetSolution[tool]}<br>`;
+            });
+            evidence += `</div>`;
+
+            // 正解メッセージとスコア表示
+            let evalMessage = "素晴らしい推理力だ！";
+            if(investigationCount <= 3) evalMessage = "天才的な探偵だ！ノーベル賞級の推理！";
+
             resultArea.style.backgroundColor = '#d4edda';
             resultArea.style.color = '#155724';
-            resultArea.style.border = '2px solid #c3e6cb';
-            resultMessage.innerHTML = `🎉 <b>大正解！</b><br><br>液体Xの正体は「${targetSolution.name}」だ！<br><span style="font-size:14px; color:#333;">${targetSolution.desc}</span>`;
+            resultArea.style.border = '4px solid #c3e6cb';
+            resultMessage.innerHTML = 
+                `🎉 <span style="font-size: 24px;"><b>大正解！</b></span><br><br>
+                 液体Xの正体は<b>「${targetSolution.name}」</b>だ！<br><br>
+                 ${targetSolution.desc}<br>
+                 <br>
+                 <b>🔍 調査回数：${investigationCount}回</b> （${evalMessage}）<br>
+                 ${evidence}`;
         } else {
             // 不正解
             const guessedName = solutions.find(s => s.id === guessedId).name;
             resultArea.style.backgroundColor = '#f8d7da';
             resultArea.style.color = '#721c24';
-            resultArea.style.border = '2px solid #f5c6cb';
-            resultMessage.innerHTML = `💦 <b>残念！間違いだ...</b><br><br>キミは「${guessedName}」だと推理したが、証拠と矛盾しているようだ。<br>本当の正体は「${targetSolution.name}」だったよ。<br><span style="font-size:14px; color:#333;">${targetSolution.desc}</span>`;
+            resultArea.style.border = '4px solid #f5c6cb';
+            resultMessage.innerHTML = 
+                `💦 <span style="font-size: 24px;"><b>残念！間違いだ...</b></span><br><br>
+                 キミは「${guessedName}」だと推理したが、証拠と矛盾しているようだ。<br>
+                 本当の正体は<b>「${targetSolution.name}」</b>だったよ。<br><br>
+                 <span style="font-size:14px; color:#333;">${targetSolution.desc}</span>`;
         }
     }
 
