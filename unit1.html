@@ -21,11 +21,11 @@
             background: linear-gradient(45deg, #8e44ad, #2980b9); border: 3px solid #fff; border-radius: 8px; cursor: pointer;
             transition: transform 0.1s, background 0.2s, border-color 0.2s;
         }
-        .btn:hover { transform: scale(1.02); }
-        .btn:active { transform: scale(0.95); }
-        .btn:disabled { transform: none; cursor: not-allowed; }
+        /* 改善②：disabledでない時だけhoverを有効化 */
+        .btn:hover:not(:disabled) { transform: scale(1.02); background: linear-gradient(45deg, #9b59b6, #3498db); }
+        .btn:active:not(:disabled) { transform: scale(0.95); }
+        .btn:disabled { transform: none; cursor: not-allowed; opacity: 0.9; }
         
-        /* レベル選択ボタン */
         .btn-level1 { background: linear-gradient(45deg, #27ae60, #2ecc71); }
         .btn-level2 { background: linear-gradient(45deg, #f39c12, #f1c40f); color: #000; border-color: #000; }
         .btn-level3 { background: linear-gradient(45deg, #c0392b, #e74c3c); }
@@ -41,15 +41,12 @@
         #explanation-box { display: none; padding: 15px; border-radius: 8px; margin-top: 15px; font-weight: bold; color: #fff; text-align: left; animation: slideUp 0.3s ease-out; }
         @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
 
-        /* ボス戦用UI */
         #boss-ui { display: none; background: rgba(0,0,0,0.8); padding: 10px; border-radius: 10px; margin-bottom: 10px; border: 2px solid #e74c3c; }
         #boss-hp-container { width: 100%; height: 20px; background-color: #333; border-radius: 10px; overflow: hidden; border: 2px solid #fff; }
         #boss-hp { height: 100%; width: 100%; background-color: #c0392b; transition: width 0.3s; }
         .boss-shake { animation: shake 0.5s; }
-
         .shake { animation: shake 0.5s; }
         @keyframes shake { 0%, 100% {transform: translateX(0);} 25% {transform: translateX(-5px);} 50% {transform: translateX(5px);} 75% {transform: translateX(-5px);} }
-
         .hidden { display: none !important; }
     </style>
 </head>
@@ -99,12 +96,16 @@
         <h2>最終魔力: <span id="final-score" style="color:#e67e22; font-size:40px;">0</span></h2>
         <h2 id="rank-text">ランク</h2>
         <p id="rank-message"></p>
-        <button class="btn" style="background: linear-gradient(45deg, #e67e22, #e74c3c);" onclick="location.reload()">タイトルへ戻る</button>
+        <button class="btn" style="background: linear-gradient(45deg, #e67e22, #e74c3c);" onclick="returnToTitle()">タイトルへ戻る</button>
     </div>
 </div>
 
 <script>
-    // レベル別クイズデータ（教科書の画像1〜4を元に作成）
+    // 改善⑤：スマホ等の音声再生ブロック対策（初回タップ時にAudioContextを起動）
+    document.body.addEventListener('click', () => {
+        if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume();
+    }, { once: true });
+
     const allQuizData = {
         beginner: [
             { stageTitle: "第1幕：消えない炎", visual: "🫙 <span class='flame'>🔥</span> 💨", situation: "底のないビンに火のついたろうそくを入れ、ねん土で下のすき間を開け、ふたを開けた。", question: "火が燃え続けた理由は？", choices: ["魔法の風が吹いたから", "空気が入れかわったから", "ビンが空気を作ったから"], correctIndex: 1, explanation: "ものが燃え続けるには【たえず空気が入れかわる】必要があるのじゃ！" },
@@ -134,7 +135,6 @@
     let combo = 0;
     let bossHp = 100;
 
-    // 効果音エンジン
     const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
     function playSound(type) {
         if(audioCtx.state === 'suspended') audioCtx.resume();
@@ -169,13 +169,39 @@
 
     function initGame(level) {
         if(audioCtx.state === 'suspended') audioCtx.resume();
+        
+        // 改善①：変数の完全リセット（SPA用）
+        currentQuestionIndex = 0;
+        score = 0;
+        combo = 0;
+        bossHp = 100;
+        ui.scoreDisplay.textContent = "魔力: 0";
+        ui.comboDisplay.classList.add('hidden');
+        ui.bossHp.style.width = "100%";
+        clearInterval(timerInterval);
+        clearTimeout(autoNextTimeout);
+
         currentLevel = level;
-        // 順番は固定して学習しやすくする（必要ならシャッフルも可能）
-        quizData = [...allQuizData[level]];
+        
+        // 改善③：ボス問題を除いてランダム化
+        const questions = [...allQuizData[level]];
+        const normalQuestions = questions.filter(q => !q.isBoss);
+        const bossQuestion = questions.find(q => q.isBoss);
+        
+        normalQuestions.sort(() => Math.random() - 0.5); // 通常問題のみシャッフル
+        quizData = bossQuestion ? [...normalQuestions, bossQuestion] : [...normalQuestions];
         
         ui.titleScreen.classList.add('hidden');
+        ui.resultScreen.classList.add('hidden');
         ui.gameScreen.classList.remove('hidden');
         loadQuestion();
+    }
+
+    function returnToTitle() {
+        // タイトルへ戻る処理
+        ui.gameScreen.classList.add('hidden');
+        ui.resultScreen.classList.add('hidden');
+        ui.titleScreen.classList.remove('hidden');
     }
 
     function loadQuestion() {
@@ -185,7 +211,9 @@
         ui.gameScreen.classList.remove('shake');
         
         const q = quizData[currentQuestionIndex];
-        ui.stageDisplay.textContent = `第${currentQuestionIndex + 1}幕 / 全${quizData.length}幕`;
+        // ボス戦がある場合は表記を少し変える
+        ui.stageDisplay.textContent = q.isBoss ? `最終幕！` : `第${currentQuestionIndex + 1}幕 / 全${quizData.length}幕`;
+        
         ui.stageTitle.textContent = q.stageTitle;
         ui.visualArea.innerHTML = q.visual;
         ui.visualArea.style.transform = "scale(0.8)";
@@ -194,7 +222,6 @@
         ui.situationText.textContent = q.situation;
         ui.questionText.textContent = q.question;
 
-        // ボス戦UIの表示
         if (q.isBoss) {
             ui.bossUi.style.display = 'block';
             ui.visualArea.classList.add('boss-shake');
@@ -238,6 +265,7 @@
         const q = quizData[currentQuestionIndex];
         const buttons = ui.choicesContainer.querySelectorAll('button');
 
+        // 改善④：タイムアップ時（-1）でも正解を緑色でハイライトする
         buttons.forEach((btn, index) => {
             btn.disabled = true;
             btn.style.background = "#7f8c8d"; btn.style.borderColor = "#95a5a6";
@@ -255,8 +283,8 @@
             
             if (q.isBoss) {
                 playSound('bossHit');
-                ui.bossHp.style.width = '0%'; // ボス撃破！
-                ui.visualArea.innerHTML = "💥☠️💥"; // ボスが爆発
+                ui.bossHp.style.width = '0%';
+                ui.visualArea.innerHTML = "💥☠️💥"; 
             } else {
                 playSound('correct');
             }
@@ -275,7 +303,7 @@
             ui.nextBtn.textContent = "結果を見る 🎓";
         }
 
-        autoNextTimeout = setTimeout(() => { nextQuestion(); }, 4000); // 4秒後に自動遷移
+        autoNextTimeout = setTimeout(() => { nextQuestion(); }, 4000); 
     }
 
     function nextQuestion() {
@@ -292,7 +320,6 @@
         const rankText = document.getElementById('rank-text');
         const rankMessage = document.getElementById('rank-message');
 
-        // レベルとスコアに応じた評価
         if (score > (quizData.length * 150)) {
             rankText.textContent = "称号：炎のマスターマジシャン"; rankText.style.color = "#f1c40f";
             rankMessage.textContent = "完璧じゃ！もうこのレベルで教えることは何もない！";
