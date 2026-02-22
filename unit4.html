@@ -22,6 +22,7 @@
             width: 100%;
             padding: 20px;
             border: 4px solid #8e44ad;
+            position: relative;
         }
         h1 {
             text-align: center;
@@ -29,6 +30,23 @@
             font-size: 24px;
             border-bottom: 2px dashed #8e44ad;
             padding-bottom: 10px;
+            margin-top: 0;
+        }
+        .settings-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background-color: #f0f3f4;
+            padding: 10px 15px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            font-weight: bold;
+        }
+        select {
+            padding: 5px 10px;
+            font-size: 16px;
+            border-radius: 5px;
+            border: 1px solid #bdc3c7;
         }
         .story-box {
             background-color: #e8f8f5;
@@ -38,6 +56,7 @@
             margin-bottom: 20px;
             color: #16a085;
             text-align: center;
+            line-height: 1.5;
         }
         .flex-area {
             display: flex;
@@ -46,6 +65,7 @@
         }
         @media (max-width: 700px) {
             .flex-area { flex-direction: column; }
+            .settings-bar { flex-direction: column; gap: 10px; }
         }
         .tools-area, .log-area {
             flex: 1;
@@ -105,6 +125,21 @@
             text-align: center;
             border: 2px solid #e67e22;
         }
+        .btn-hint {
+            background-color: #f1c40f;
+            color: #333;
+            border: none;
+            padding: 8px 20px;
+            border-radius: 20px;
+            font-size: 15px;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+            transition: transform 0.1s;
+        }
+        .btn-hint:active { transform: scale(0.95); }
+        .btn-hint:hover { background-color: #f39c12; color: white;}
+
         .suspect-btns {
             display: flex;
             flex-wrap: wrap;
@@ -142,6 +177,17 @@
             display: inline-block;
             width: 80%;
         }
+        .score-display {
+            font-size: 22px;
+            color: #c0392b;
+            font-weight: bold;
+            background: #fadbd8;
+            display: inline-block;
+            padding: 10px 20px;
+            border-radius: 30px;
+            margin: 15px 0;
+            border: 2px solid #e74c3c;
+        }
         .btn-restart {
             margin-top: 20px;
             background-color: #27ae60;
@@ -160,10 +206,23 @@
 
 <div class="game-container">
     <h1>🔍 理科室の探偵！謎の液体X</h1>
+    
+    <div class="settings-bar">
+        <div>
+            <label for="difficulty-select">📊 難易度：</label>
+            <select id="difficulty-select" onchange="initGame()">
+                <option value="1">初級（3種類：塩酸・炭酸水・食塩水）</option>
+                <option value="2">中級（5種類：初級＋アンモニア水・石灰水）</option>
+                <option value="3" selected>上級（6種類：すべて）</option>
+            </select>
+        </div>
+        <button class="btn-hint" onclick="showHint()">💡 探偵長にヒントをもらう</button>
+    </div>
+
     <div class="story-box" id="story-text">
         探偵長！ラベルのはがれた「謎の液体X」が見つかりました。<br>
         調査ツールを使って証拠を集め、正体を当ててください！<br>
-        <span style="font-size: 0.9em; color: #e74c3c;">※優秀な探偵ほど、少ない調査回数で正体をあばくぞ！</span>
+        <span style="font-size: 0.9em; color: #e74c3c;">※調査は<b>3回まで減点なし！</b>しっかり調べて推理しよう。（4回目以降はスコアが下がるぞ！）</span>
     </div>
 
     <div class="flex-area">
@@ -221,24 +280,25 @@
         'limewater': '石灰水'
     };
 
-    // 6つの水溶液のデータ（安全性と発展学習を考慮）
-    const solutions = [
+    // すべての水溶液のデータ
+    const allSolutions = [
         {
-            id: "ensan", name: "塩酸",
+            id: "ensan", name: "塩酸", level: 1,
             appearance: "無色とうめいだ。",
             smell: "手であおぐと、つんとしたにおいがする！",
             litmus: "青色のリトマス紙が赤色になった！（酸性）",
             btb: "黄色になった！（酸性）",
             phenolphthalein: "変化なし。（無色）",
-            electricity: "豆電球が明るく点灯した！（電気を通す）",
+            electricity: "豆電球が明るく点灯した！（強く電気を通す）",
             metal_al: "あわを出してとけた！",
             metal_fe: "あわを出してとけた！",
             evaporate: "何も残らない。気体がとけているようだ。",
             limewater: "変化なし。",
-            desc: "金属をとかし、つんとしたにおいがするのは「塩酸」の大きな特徴だよ！"
+            desc: "金属をとかし、つんとしたにおいがするのは「塩酸」の大きな特徴だよ！",
+            hint: "【探偵長より】\nBTB液やリトマス紙で「酸性」か確かめてみろ！あと「金属」をとかすのがこいつの大きな特徴だ！"
         },
         {
-            id: "tansansui", name: "炭酸水",
+            id: "tansansui", name: "炭酸水", level: 1,
             appearance: "無色とうめいだが、小さなあわが出ている！",
             smell: "手であおいでかいだが、とくににおいはしない。",
             litmus: "青色のリトマス紙が赤色になった！（酸性）",
@@ -249,24 +309,26 @@
             metal_fe: "変化なし。（とけない）",
             evaporate: "何も残らない。気体がとけているようだ。",
             limewater: "白くにごった！二酸化炭素がとけている証拠だ！",
-            desc: "あわが出ていて、石灰水を白くにごらせるのは「炭酸水」だけだね！"
+            desc: "あわが出ていて、石灰水を白くにごらせるのは「炭酸水」だけだね！",
+            hint: "【探偵長より】\n「見た目」をよく観察しろ！それから「石灰水」を混ぜてみると一発でわかるはずだ！"
         },
         {
-            id: "shokuensui", name: "食塩水",
+            id: "shokuensui", name: "食塩水", level: 1,
             appearance: "無色とうめいだ。",
             smell: "手であおいでかいだが、とくににおいはしない。",
             litmus: "どちらのリトマス紙も変化なし。（中性）",
             btb: "緑色になった！（中性）",
             phenolphthalein: "変化なし。（無色）",
-            electricity: "豆電球が明るく点灯した！（電気を通す）",
+            electricity: "豆電球が明るく点灯した！（強く電気を通す）",
             metal_al: "変化なし。（とけない）",
             metal_fe: "変化なし。（とけない）",
             evaporate: "白いものが残った！固体がとけているようだ。",
             limewater: "変化なし。",
-            desc: "中性で、においがなく、蒸発させると白いものが残るのは「食塩水」だね！"
+            desc: "中性で、においがなく、蒸発させると白いものが残るのは「食塩水」だね！",
+            hint: "【探偵長より】\nBTB液が「緑色（中性）」にならないか？あと「蒸発」させると何かが残るはずだ！"
         },
         {
-            id: "ammonia", name: "アンモニア水",
+            id: "ammonia", name: "アンモニア水", level: 2,
             appearance: "無色とうめいだ。",
             smell: "手であおぐと、つんとしたにおいがする！",
             litmus: "赤色のリトマス紙が青色になった！（アルカリ性）",
@@ -277,68 +339,77 @@
             metal_fe: "変化なし。（とけない）",
             evaporate: "何も残らない。気体がとけているようだ。",
             limewater: "変化なし。",
-            desc: "アルカリ性で、つんとしたにおいがして、何も残らないのは「アンモニア水」だよ！"
+            desc: "アルカリ性で、つんとしたにおいがして、何も残らないのは「アンモニア水」だよ！",
+            hint: "【探偵長より】\n「アルカリ性」の反応が出るはずだ。「におい」をかぐと特徴的だぞ！蒸発させるとどうなるかな？"
         },
         {
-            id: "sekkausui", name: "石灰水",
+            id: "sekkausui", name: "石灰水", level: 2,
             appearance: "無色とうめいだ。",
             smell: "手であおいでかいだが、とくににおいはしない。",
             litmus: "赤色のリトマス紙が青色になった！（アルカリ性）",
             btb: "青色になった！（アルカリ性）",
             phenolphthalein: "赤色になった！（アルカリ性）",
-            electricity: "豆電球が点灯した！（電気を通す）",
+            electricity: "豆電球が少しだけ点灯した！（弱く電気を通す）",
             metal_al: "変化なし。（とけない）",
             metal_fe: "変化なし。（とけない）",
             evaporate: "白いものが残った！固体がとけているようだ。",
             limewater: "変化なし。",
-            desc: "においのないアルカリ性で、金属をとかさないのは「石灰水」だね！"
+            desc: "においのないアルカリ性で、金属をとかさないのは「石灰水」だね！弱く電気を通すのも特徴だ。",
+            hint: "【探偵長より】\n「アルカリ性」だけど、「におい」はない。「電気」の通り方が少し弱い（豆電球が暗い）のが見分けるポイントだ！"
         },
         {
-            id: "suisanka", name: "水酸化ナトリウム水溶液",
+            id: "suisanka", name: "水酸化ナトリウム水溶液", level: 3,
             appearance: "無色とうめいだ。",
             smell: "手であおいでかいだが、とくににおいはしない。",
             litmus: "赤色のリトマス紙が青色になった！（アルカリ性）",
             btb: "青色になった！（アルカリ性）",
             phenolphthalein: "赤色になった！（アルカリ性）",
-            electricity: "豆電球が明るく点灯した！（電気を通す）",
+            electricity: "豆電球が明るく点灯した！（強く電気を通す）",
             metal_al: "あわを出してとけた！",
             metal_fe: "変化なし。（とけない）",
             evaporate: "白いものが残った！固体がとけているようだ。",
             limewater: "変化なし。",
-            desc: "アルカリ性で、アルミニウムだけをとかすのは「水酸化ナトリウム水溶液」の特別な性質だよ！"
+            desc: "アルカリ性で、アルミニウムだけを強力にとかすのは「水酸化ナトリウム水溶液」の特別な性質だよ！",
+            hint: "【探偵長より】\n「アルカリ性」で「電気を強く通す」。そして何より、「アルミニウム」だけをとかす強力な液だ！"
         }
     ];
 
+    let activeSolutions = [];
     let targetSolution = null;
     let investigatedTools = [];
-    let investigationCount = 0; // 調査回数をカウント
+    let investigationCount = 0;
+
+    // ヒントを表示する関数
+    function showHint() {
+        if (!targetSolution) return;
+        alert(targetSolution.hint);
+    }
 
     // ゲームの初期化
     function initGame() {
-        // ランダムにターゲットを1つ決定
-        const randomIndex = Math.floor(Math.random() * solutions.length);
-        targetSolution = solutions[randomIndex];
+        const diffLevel = parseInt(document.getElementById('difficulty-select').value);
+        activeSolutions = allSolutions.filter(sol => sol.level <= diffLevel);
+
+        const randomIndex = Math.floor(Math.random() * activeSolutions.length);
+        targetSolution = activeSolutions[randomIndex];
+        
         investigatedTools = [];
         investigationCount = 0;
 
-        // UIとボタンのリセット
         document.getElementById('investigation-log').innerHTML = '<div style="color:#7f8c8d;" id="log-placeholder">まだ調査は行われていません。</div>';
         document.getElementById('investigation-count').innerText = investigationCount;
         document.getElementById('result-area').style.display = 'none';
         document.getElementById('inference-area').style.display = 'block';
 
-        // すべての調査ボタンを再び有効化する
         const toolBtns = document.querySelectorAll('.btn-tool');
         toolBtns.forEach(btn => {
             btn.disabled = false;
         });
 
-        // 推理ボタンの生成
         const suspectContainer = document.getElementById('suspect-container');
         suspectContainer.innerHTML = '';
         
-        // 選択肢の順番をランダムにする
-        const shuffledSolutions = [...solutions].sort(() => Math.random() - 0.5);
+        const shuffledSolutions = [...activeSolutions].sort(() => Math.random() - 0.5);
         
         shuffledSolutions.forEach(sol => {
             const btn = document.createElement('button');
@@ -351,19 +422,16 @@
 
     // 調査ツールを使ったときの処理
     function investigate(toolKey, btn) {
-        // すでに同じ調査をしていたら無視する
         if (investigatedTools.includes(toolKey)) return;
 
-        // 初めての調査のとき、プレースホルダーを消す
         if (investigatedTools.length === 0) {
             document.getElementById('log-placeholder').style.display = 'none';
         }
 
         investigatedTools.push(toolKey);
-        investigationCount++; // 調査回数をプラス
+        investigationCount++;
         document.getElementById('investigation-count').innerText = investigationCount;
 
-        // ボタンを無効化（グレーアウト）
         btn.disabled = true;
 
         const resultText = targetSolution[toolKey];
@@ -374,7 +442,6 @@
 
     // 推理（解答）したときの処理
     function guess(guessedId) {
-        // 最低1回は調査していないと推理できない
         if (investigatedTools.length === 0) {
             alert("まだ証拠がありません！上のツールから調査をしてから推理しよう！");
             return;
@@ -384,42 +451,48 @@
         const resultMessage = document.getElementById('result-message');
         const inferenceArea = document.getElementById('inference-area');
 
-        inferenceArea.style.display = 'none'; // 解答ボタンを隠す
-        resultArea.style.display = 'block';   // 結果エリアを表示
+        inferenceArea.style.display = 'none';
+        resultArea.style.display = 'block';
+
+        // スコア計算: 3回までは100点満点。4回目以降、1回につき10点減点。
+        let score = 100;
+        if (investigationCount > 3) {
+            score = 100 - ((investigationCount - 3) * 10);
+        }
+        if (score < 10) score = 10; 
 
         if (guessedId === targetSolution.id) {
-            // 正解時の証拠まとめを作成
             let evidence = `<div class="evidence-summary"><strong>【キミが集めた証拠まとめ】</strong><br>`;
             investigatedTools.forEach(tool => {
                 evidence += `・${toolNames[tool]}： ${targetSolution[tool]}<br>`;
             });
             evidence += `</div>`;
 
-            // 正解メッセージとスコア表示
-            let evalMessage = "素晴らしい推理力だ！";
-            if(investigationCount <= 3) evalMessage = "天才的な探偵だ！ノーベル賞級の推理！";
-
             resultArea.style.backgroundColor = '#d4edda';
             resultArea.style.color = '#155724';
             resultArea.style.border = '4px solid #c3e6cb';
+            
             resultMessage.innerHTML = 
                 `🎉 <span style="font-size: 24px;"><b>大正解！</b></span><br><br>
                  液体Xの正体は<b>「${targetSolution.name}」</b>だ！<br><br>
-                 ${targetSolution.desc}<br>
-                 <br>
-                 <b>🔍 調査回数：${investigationCount}回</b> （${evalMessage}）<br>
+                 <span style="font-size:15px; color:#333;">${targetSolution.desc}</span><br>
+                 <div class="score-display">🏅 探偵スコア：${score} 点！</div><br>
+                 <b>🔍 調査回数：${investigationCount}回</b><br>
                  ${evidence}`;
         } else {
-            // 不正解
-            const guessedName = solutions.find(s => s.id === guessedId).name;
+            const guessedName = activeSolutions.find(s => s.id === guessedId).name;
             resultArea.style.backgroundColor = '#f8d7da';
             resultArea.style.color = '#721c24';
             resultArea.style.border = '4px solid #f5c6cb';
+            
             resultMessage.innerHTML = 
                 `💦 <span style="font-size: 24px;"><b>残念！間違いだ...</b></span><br><br>
                  キミは「${guessedName}」だと推理したが、証拠と矛盾しているようだ。<br>
                  本当の正体は<b>「${targetSolution.name}」</b>だったよ。<br><br>
-                 <span style="font-size:14px; color:#333;">${targetSolution.desc}</span>`;
+                 <span style="font-size:14px; color:#333;">${targetSolution.desc}</span><br>
+                 <div class="score-display" style="background:#f2f3f4; border-color:#bdc3c7; color:#7f8c8d;">
+                    スコア：0 点... 次は慎重に調査しよう！
+                 </div>`;
         }
     }
 
