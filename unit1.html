@@ -3,183 +3,396 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>1. 物の燃え方と空気 - 理科アプリ</title>
-    <link rel="stylesheet" href="style.css">
+    <title>炎のマジシャン イグニスの秘密の実験室</title>
     <style>
-        /* unit1専用のスタイル */
-        .experiment-box {
-            background: #fff;
+        /* 全体のデザイン（マジックらしいダークな雰囲気） */
+        body {
+            font-family: 'Hiragino Maru Gothic ProN', 'Meiryo', sans-serif;
+            background-color: #1a0b2e;
+            color: #fff;
+            text-align: center;
+            margin: 0;
             padding: 20px;
-            border-radius: 10px;
+        }
+        #game-container {
             max-width: 600px;
             margin: 0 auto;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-        }
-        .jar {
-            width: 150px;
-            height: 200px;
-            border: 4px solid #b0c4de;
-            border-top: none;
-            border-radius: 0 0 20px 20px;
-            margin: 40px auto 20px;
+            background-color: #2d1b4e;
+            border: 4px solid #f39c12;
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 0 20px #e67e22;
             position: relative;
-            background: rgba(240, 248, 255, 0.5);
         }
-        .lid {
-            width: 160px;
-            height: 20px;
-            background: #8b4513;
-            position: absolute;
-            top: -24px;
-            left: -9px;
-            border-radius: 5px;
-            transition: top 0.3s;
-        }
-        .lid.open {
-            top: -60px; /* フタが開いている状態 */
-        }
-        .candle {
-            font-size: 80px;
-            position: absolute;
-            bottom: 10px;
-            left: 50%;
-            transform: translateX(-50%);
-            transition: opacity 0.3s;
-        }
-        .meters {
+        h1, h2, h3 { color: #f1c40f; text-shadow: 2px 2px 4px #000; }
+        
+        /* 視覚エフェクト（画像代わりの絵文字表示エリア） */
+        #visual-area {
+            font-size: 60px;
+            height: 100px;
+            margin: 10px 0;
             display: flex;
-            justify-content: space-around;
-            margin-bottom: 20px;
-            font-size: 1.2rem;
-            font-weight: bold;
+            justify-content: center;
+            align-items: center;
+            gap: 20px;
         }
-        .meter-o2 { color: #e74c3c; }
-        .meter-co2 { color: #34495e; }
-        .controls button {
-            padding: 10px 20px;
-            font-size: 1rem;
-            margin: 5px;
+        /* 炎が揺れるアニメーション */
+        .flame {
+            animation: flicker 0.5s infinite alternate;
+            display: inline-block;
+        }
+        @keyframes flicker {
+            0% { transform: scale(1) rotate(-5deg); opacity: 1; text-shadow: 0 0 10px #ff0000; }
+            100% { transform: scale(1.2) rotate(5deg); opacity: 0.8; text-shadow: 0 0 20px #ffaa00; }
+        }
+        /* 登場アニメーション */
+        .pop-in { animation: pop 0.3s ease-out; }
+        @keyframes pop {
+            0% { transform: scale(0); }
+            80% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+
+        /* ボタンデザイン */
+        .btn {
+            display: block;
+            width: 85%;
+            margin: 10px auto;
+            padding: 12px;
+            font-size: 16px;
+            font-weight: bold;
+            color: #fff;
+            background: linear-gradient(45deg, #8e44ad, #2980b9);
+            border: 2px solid #fff;
+            border-radius: 8px;
             cursor: pointer;
+            transition: transform 0.2s, background 0.2s;
+        }
+        .btn:hover {
+            transform: scale(1.05);
+            background: linear-gradient(45deg, #9b59b6, #3498db);
+        }
+        .btn:disabled { background: #7f8c8d; border-color: #95a5a6; cursor: not-allowed; transform: none; }
+        
+        /* タイマーとステータス */
+        #status-bar {
+            display: flex;
+            justify-content: space-between;
+            background-color: #000;
+            padding: 10px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            font-weight: bold;
+            color: #f1c40f;
+        }
+        #timer-bar-container {
+            width: 100%;
+            height: 10px;
+            background-color: #333;
             border-radius: 5px;
-            border: none;
-            background-color: #3498db;
-            color: white;
-            font-weight: bold;
+            margin-bottom: 15px;
+            overflow: hidden;
         }
-        .controls button:hover { background-color: #2980b9; }
-        #message {
-            font-size: 1.2rem;
-            color: #d35400;
-            height: 30px;
+        #timer-bar {
+            height: 100%;
+            width: 100%;
+            background-color: #2ecc71;
+            transition: width 1s linear, background-color 0.5s;
+        }
+        
+        /* テキストボックス */
+        #situation-box {
+            background-color: #000;
+            padding: 15px;
+            border-radius: 8px;
+            border: 2px dashed #9b59b6;
+            margin-bottom: 15px;
+            text-align: left;
+            line-height: 1.6;
+        }
+        #explanation-box {
+            display: none;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 20px;
+            font-weight: bold;
+            color: #fff;
+        }
+        #hint-btn {
+            background: #d35400;
+            width: auto;
+            display: inline-block;
+            padding: 5px 15px;
+            margin-top: -10px;
             margin-bottom: 10px;
-            font-weight: bold;
         }
+        .hidden { display: none !important; }
     </style>
 </head>
 <body>
-    <header>
-        <h1>🔥 1. 物の燃え方と空気</h1>
-        <p>フタを閉めると、びんの中の空気はどうなるかな？</p>
-    </header>
 
-    <main>
-        <div class="experiment-box">
-            <div id="message">ミッション：火をできるだけ長く燃やそう！</div>
-            
-            <div class="meters">
-                <div class="meter-o2">酸素 (O₂): <span id="o2-val">21.0</span> %</div>
-                <div class="meter-co2">二酸化炭素 (CO₂): <span id="co2-val">0.04</span> %</div>
-            </div>
+<div id="game-container">
+    <div id="title-screen">
+        <div style="font-size: 80px; margin: 20px 0;">🪄<span class="flame">🔥</span>🎩</div>
+        <h1>炎のマジシャン<br>イグニスの秘密の実験室</h1>
+        <p>「我が弟子よ、炎の謎を解き明かし、<br>マスター・マジシャンを目指すのじゃ！」</p>
+        <button class="btn" style="background: linear-gradient(45deg, #e67e22, #e74c3c);" onclick="startGame()">マジックショーを開演する</button>
+    </div>
 
-            <div class="jar">
-                <div id="lid" class="lid open"></div>
-                <div id="candle" class="candle">🕯️</div>
-            </div>
-
-            <div class="controls">
-                <button onclick="toggleLid()" id="lid-btn">フタを閉める</button>
-                <button onclick="resetExperiment()" style="background-color: #95a5a6;">リセット</button>
-            </div>
-            
-            <div style="margin-top: 20px;">
-                <a href="index.html" style="color: #4CAF50; text-decoration: none;">← メニューに戻る</a>
-            </div>
+    <div id="game-screen" class="hidden">
+        <div id="status-bar">
+            <span id="stage-display">ステージ: 1</span>
+            <span id="score-display">魔力ポイント: 0</span>
         </div>
-    </main>
+        
+        <div id="timer-bar-container">
+            <div id="timer-bar"></div>
+        </div>
 
-    <script>
-        // 実験のデータ
-        let o2 = 21.0;
-        let co2 = 0.04;
-        let isLidClosed = false;
-        let isBurning = true;
-        let timer;
+        <h2 id="stage-title">ステージタイトル</h2>
+        
+        <div id="visual-area"></div>
 
-        const o2Display = document.getElementById('o2-val');
-        const co2Display = document.getElementById('co2-val');
-        const lidElement = document.getElementById('lid');
-        const lidBtn = document.getElementById('lid-btn');
-        const candleElement = document.getElementById('candle');
-        const messageBox = document.getElementById('message');
+        <div id="situation-box">
+            <p id="situation-text">イグニスのセリフと状況</p>
+        </div>
+        
+        <button id="hint-btn" class="btn" onclick="showHint()">💡 ヒントを見る</button>
+        <p id="hint-text" class="hidden" style="color: #f1c40f; font-size: 14px;"></p>
 
-        // フタの開け閉めボタン
-        function toggleLid() {
-            isLidClosed = !isLidClosed;
-            if (isLidClosed) {
-                lidElement.classList.remove('open');
-                lidBtn.innerText = "フタを開ける";
-                messageBox.innerText = "フタを閉めた！メーターに注目！";
-            } else {
-                lidElement.classList.add('open');
-                lidBtn.innerText = "フタを閉める";
-                if (isBurning) {
-                    messageBox.innerText = "空気が入れ替わった！";
-                    // フタを開けたら空気が元に戻る
-                    o2 = 21.0;
-                    co2 = 0.04;
-                    updateMeters();
-                }
+        <h3 id="question-text">問題文</h3>
+        
+        <div id="choices-container">
+            </div>
+
+        <div id="explanation-box">
+            <h3 id="result-mark" style="margin:0; font-size: 24px;"></h3>
+            <p id="explanation-text">解説文</p>
+            <button class="btn" id="next-btn" style="background: #2c3e50;" onclick="nextQuestion()">次のマジックへ 🪄</button>
+        </div>
+    </div>
+
+    <div id="result-screen" class="hidden">
+        <div style="font-size: 80px; margin: 20px 0;">✨🎓✨</div>
+        <h1>ショー終了！</h1>
+        <h2>獲得した魔力ポイント: <span id="final-score">0</span></h2>
+        <h2 id="rank-text">ランク</h2>
+        <p id="rank-message">メッセージ</p>
+        <button class="btn" style="background: linear-gradient(45deg, #e67e22, #e74c3c);" onclick="location.reload()">もう一度挑戦する</button>
+    </div>
+</div>
+
+<script>
+    // 全4ステージのクイズデータ
+    const quizData = [
+        {
+            stageTitle: "第1幕：消えない炎のイリュージョン",
+            visual: "🫙 <span class='flame'>🔥</span> 💨",
+            situation: "イグニス「底のないビンをろうそくにかぶせたぞ。ねん土で密着させると火は消えるが、ねん土にすき間を開け、ふたを開けた時だけ火が燃え続けた。」",
+            question: "火が燃え続けた理由はどれだ？",
+            choices: [
+                "魔法の風が吹いて火を強くしたから",
+                "空気が下から入って上へ出ていき、入れかわったから",
+                "ビンの魔法で新しい空気が作られたから"
+            ],
+            correctIndex: 1,
+            hint: "ヒント：線香の煙を近づけると、下から吸い込まれて上へ抜けていくぞ。",
+            explanation: "ものが燃え続けるためには【たえず空気が入れかわる】必要があるのじゃ！"
+        },
+        {
+            stageTitle: "第2幕：3つの気体のマジックボックス",
+            visual: "📦 <span class='flame' style='font-size: 80px;'>🔥</span> ✨",
+            situation: "イグニス「酸素・二酸化炭素・ちっ素、3つの見えない気体が入ったビンを用意した。ここに火のついたろうそくを入れるぞ！」",
+            question: "他の気体よりも【激しく】物を燃やす働きがある気体はどれだ？",
+            choices: ["ちっ素", "二酸化炭素", "酸素"],
+            correctIndex: 2,
+            hint: "ヒント：人間が呼吸で吸い込んでいる、あの気体じゃよ！",
+            explanation: "【酸素】には、ものを燃やすはたらきがある。ちっ素や二酸化炭素に入れると、火はすぐに消えてしまうんじゃ。"
+        },
+        {
+            stageTitle: "第3幕：透明な水が白くにごる魔法",
+            visual: "🫙 🪄 🥛",
+            situation: "イグニス「ものが燃えた後のビンに『魔法の水（石灰水）』を入れ、ビンを振って混ぜると、透明だった水が真っ白ににごったぞ！」",
+            question: "石灰水を白くにごらせた、この気体の正体はなんだ？",
+            choices: ["酸素", "二酸化炭素", "水蒸気"],
+            correctIndex: 1,
+            hint: "ヒント：ものが燃えると、酸素が使われて『この気体』ができるんじゃ。",
+            explanation: "石灰水は【二酸化炭素】が混じると白くにごる性質がある。これで燃えた後に二酸化炭素ができたことが証明されたな！"
+        },
+        {
+            stageTitle: "第4幕：見えない割合を見破る透視",
+            visual: "📏 👁️ 💨",
+            situation: "イグニス「最後に『気体検知管』という道具で、燃える前と後の空気を透視するぞ。燃える前、酸素は約21%だった。」",
+            question: "ろうそくが燃えた後、酸素の割合はどう変化したかな？",
+            choices: [
+                "約21%のまま変わらない",
+                "約17%に減った",
+                "約30%に増えた"
+            ],
+            correctIndex: 1,
+            hint: "ヒント：ものが燃えるときに酸素は「使われる」のじゃったな？",
+            explanation: "ものが燃えると、空気中の酸素の一部が使われて【減り】、代わりに二酸化炭素が【増える】のじゃよ！"
+        }
+    ];
+
+    let currentQuestionIndex = 0;
+    let score = 0;
+    let timeLeft = 15; // 制限時間15秒
+    let timerInterval;
+
+    // HTML要素
+    const ui = {
+        titleScreen: document.getElementById('title-screen'),
+        gameScreen: document.getElementById('game-screen'),
+        resultScreen: document.getElementById('result-screen'),
+        stageTitle: document.getElementById('stage-title'),
+        visualArea: document.getElementById('visual-area'),
+        situationText: document.getElementById('situation-text'),
+        questionText: document.getElementById('question-text'),
+        choicesContainer: document.getElementById('choices-container'),
+        explanationBox: document.getElementById('explanation-box'),
+        explanationText: document.getElementById('explanation-text'),
+        resultMark: document.getElementById('result-mark'),
+        nextBtn: document.getElementById('next-btn'),
+        scoreDisplay: document.getElementById('score-display'),
+        stageDisplay: document.getElementById('stage-display'),
+        timerBar: document.getElementById('timer-bar'),
+        hintBtn: document.getElementById('hint-btn'),
+        hintText: document.getElementById('hint-text')
+    };
+
+    function startGame() {
+        ui.titleScreen.classList.add('hidden');
+        ui.gameScreen.classList.remove('hidden');
+        loadQuestion();
+    }
+
+    function loadQuestion() {
+        // 初期化
+        ui.explanationBox.style.display = 'none';
+        ui.choicesContainer.innerHTML = '';
+        ui.hintText.classList.add('hidden');
+        ui.hintBtn.disabled = false;
+        
+        const q = quizData[currentQuestionIndex];
+        ui.stageDisplay.textContent = `ステージ: ${currentQuestionIndex + 1} / ${quizData.length}`;
+        ui.stageTitle.textContent = q.stageTitle;
+        ui.visualArea.innerHTML = q.visual;
+        ui.visualArea.classList.add('pop-in');
+        
+        setTimeout(() => ui.visualArea.classList.remove('pop-in'), 300); // アニメーションリセット
+
+        ui.situationText.textContent = q.situation;
+        ui.questionText.textContent = q.question;
+        ui.hintText.textContent = q.hint;
+
+        // 選択肢の生成
+        q.choices.forEach((choice, index) => {
+            const button = document.createElement('button');
+            button.className = 'btn';
+            button.textContent = choice;
+            button.onclick = () => checkAnswer(index);
+            ui.choicesContainer.appendChild(button);
+        });
+
+        startTimer();
+    }
+
+    function startTimer() {
+        timeLeft = 15;
+        ui.timerBar.style.width = '100%';
+        ui.timerBar.style.backgroundColor = '#2ecc71'; // 緑
+
+        clearInterval(timerInterval);
+        timerInterval = setInterval(() => {
+            timeLeft--;
+            const percentage = (timeLeft / 15) * 100;
+            ui.timerBar.style.width = `${percentage}%`;
+
+            if (timeLeft <= 5) {
+                ui.timerBar.style.backgroundColor = '#e74c3c'; // 残り5秒で赤に
             }
-        }
 
-        // 実験のメインループ（1秒ごとに実行）
-        function gameLoop() {
-            if (isBurning && isLidClosed) {
-                // 燃えると酸素が減り、二酸化炭素が増える
-                o2 -= 0.8;
-                co2 += 0.8;
-                
-                // 酸素が15%以下になると火が消える（理科の重要ポイント！）
-                if (o2 <= 15.0) {
-                    isBurning = false;
-                    candleElement.innerText = "💨"; // 煙の絵文字に変更
-                    messageBox.innerText = "【実験終了】酸素が減って火が消えた！";
-                }
-                updateMeters();
+            if (timeLeft <= 0) {
+                clearInterval(timerInterval);
+                checkAnswer(-1); // 時間切れは -1 を渡す
             }
+        }, 1000);
+    }
+
+    function showHint() {
+        ui.hintText.classList.remove('hidden');
+        ui.hintBtn.disabled = true; // ヒントは1回だけ
+    }
+
+    function checkAnswer(selectedIndex) {
+        clearInterval(timerInterval); // タイマー停止
+
+        // ボタン無効化
+        const buttons = ui.choicesContainer.querySelectorAll('button');
+        buttons.forEach(btn => btn.disabled = true);
+        ui.hintBtn.disabled = true;
+
+        const q = quizData[currentQuestionIndex];
+        
+        if (selectedIndex === q.correctIndex) {
+            // 正解（残り時間でボーナスポイント）
+            const points = 100 + (timeLeft * 10);
+            score += points;
+            ui.scoreDisplay.textContent = `魔力ポイント: ${score}`;
+            ui.explanationBox.style.backgroundColor = '#27ae60';
+            ui.resultMark.textContent = "⭕ お見事じゃ！";
+        } else if (selectedIndex === -1) {
+            // 時間切れ
+            ui.explanationBox.style.backgroundColor = '#c0392b';
+            ui.resultMark.textContent = "⏰ 時間切れじゃ！";
+        } else {
+            // 不正解
+            ui.explanationBox.style.backgroundColor = '#c0392b';
+            ui.resultMark.textContent = "❌ むむ、違うぞ！";
         }
 
-        // メーターの表示を更新
-        function updateMeters() {
-            o2Display.innerText = o2.toFixed(1);
-            co2Display.innerText = co2.toFixed(2);
-        }
+        ui.explanationText.textContent = q.explanation;
+        ui.explanationBox.style.display = 'block';
 
-        // 実験を最初からやり直す
-        function resetExperiment() {
-            o2 = 21.0;
-            co2 = 0.04;
-            isLidClosed = false;
-            isBurning = true;
-            lidElement.classList.add('open');
-            lidBtn.innerText = "フタを閉める";
-            candleElement.innerText = "🕯️";
-            messageBox.innerText = "ミッション：火をできるだけ長く燃やそう！";
-            updateMeters();
+        if (currentQuestionIndex === quizData.length - 1) {
+            ui.nextBtn.textContent = "結果を見る 🎓";
         }
+    }
 
-        // 1秒に1回 gameLoop を実行する
-        timer = setInterval(gameLoop, 1000);
-    </script>
+    function nextQuestion() {
+        currentQuestionIndex++;
+        if (currentQuestionIndex < quizData.length) {
+            loadQuestion();
+        } else {
+            showResult();
+        }
+    }
+
+    function showResult() {
+        ui.gameScreen.classList.add('hidden');
+        ui.resultScreen.classList.remove('hidden');
+        
+        document.getElementById('final-score').textContent = score;
+        const rankText = document.getElementById('rank-text');
+        const rankMessage = document.getElementById('rank-message');
+
+        // 最高得点は (100+15*10) * 4 = 1000点
+        if (score >= 800) {
+            rankText.textContent = "称号：炎のマスターマジシャン";
+            rankText.style.color = "#f1c40f";
+            rankMessage.textContent = "素晴らしい！お前はすでに炎と気体を完全に支配しておる！";
+        } else if (score >= 400) {
+            rankText.textContent = "称号：一人前のマジシャン";
+            rankText.style.color = "#3498db";
+            rankMessage.textContent = "よくやった！あと少しでマスターじゃ。";
+        } else {
+            rankText.textContent = "称号：見習いマジシャン";
+            rankText.style.color = "#95a5a6";
+            rankMessage.textContent = "まだまだ修行が必要じゃな。復習して出直してこい！";
+        }
+    }
+</script>
+
 </body>
 </html>
