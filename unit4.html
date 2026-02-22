@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>4. 水よう液の性質 - 理科アプリ</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        .lab-box {
+            background: #fff; padding: 20px; border-radius: 10px;
+            max-width: 700px; margin: 20px auto; box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+        .desk {
+            background: #dcdde1; padding: 20px; border-radius: 10px;
+            display: flex; justify-content: space-around; margin-bottom: 20px;
+        }
+        .beaker-container { text-align: center; cursor: pointer; transition: 0.2s; }
+        .beaker-container:hover { transform: translateY(-5px); }
+        .beaker {
+            width: 80px; height: 100px; border: 3px solid #7f8fa6;
+            border-top: none; border-radius: 0 0 10px 10px;
+            position: relative; background: rgba(255,255,255,0.5);
+            margin: 0 auto 10px; overflow: hidden;
+        }
+        .liquid {
+            position: absolute; bottom: 0; width: 100%; height: 70%;
+            background: rgba(173, 216, 230, 0.4); /* 透明な水色 */
+        }
+        /* 泡のアニメーション */
+        .bubbles {
+            position: absolute; bottom: 0; width: 100%; height: 100%;
+            background: radial-gradient(circle, white 10%, transparent 20%);
+            background-size: 10px 10px;
+            animation: bubbleUp 1s infinite linear;
+            opacity: 0;
+        }
+        @keyframes bubbleUp {
+            0% { transform: translateY(10px); }
+            100% { transform: translateY(-100px); }
+        }
+        
+        .tools { display: flex; justify-content: center; gap: 15px; margin-bottom: 20px; }
+        .tool-btn {
+            padding: 15px; font-size: 1rem; font-weight: bold; border: 2px solid #ccc;
+            border-radius: 8px; cursor: pointer; background: #fff; transition: 0.2s;
+        }
+        .tool-btn.selected { border-color: #e74c3c; background: #ffeaa7; transform: scale(1.05); }
+        #tool-red { border-bottom: 5px solid #ff7675; }
+        #tool-blue { border-bottom: 5px solid #74b9ff; }
+        #tool-al { border-bottom: 5px solid #b2bec3; }
+
+        .monitor {
+            background: #2d3436; color: #00b894; padding: 15px;
+            border-radius: 5px; font-family: monospace; font-size: 1.2rem;
+            min-height: 60px; margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1 style="color:white;">🧪 4. 水よう液の性質</h1>
+        <p>アイテムを使って、A・B・Cの液体の正体を突き止めよう！</p>
+    </header>
+
+    <main>
+        <div class="lab-box">
+            <div class="tools">
+                <button class="tool-btn" id="tool-red" onclick="selectTool('red')">赤色リトマス紙</button>
+                <button class="tool-btn" id="tool-blue" onclick="selectTool('blue')">青色リトマス紙</button>
+                <button class="tool-btn" id="tool-al" onclick="selectTool('al')">アルミニウム片</button>
+            </div>
+
+            <div class="monitor" id="monitor">
+                実験アイテムを選んでから、ビーカーをタップしてください。
+            </div>
+
+            <div class="desk">
+                <div class="beaker-container" onclick="useTool('A')">
+                    <div class="beaker"><div class="liquid"></div><div class="bubbles" id="bubble-A"></div></div>
+                    <h3>液体 A</h3>
+                </div>
+                <div class="beaker-container" onclick="useTool('B')">
+                    <div class="beaker"><div class="liquid"></div><div class="bubbles" id="bubble-B"></div></div>
+                    <h3>液体 B</h3>
+                </div>
+                <div class="beaker-container" onclick="useTool('C')">
+                    <div class="beaker"><div class="liquid"></div><div class="bubbles" id="bubble-C"></div></div>
+                    <h3>液体 C</h3>
+                </div>
+            </div>
+
+            <div style="text-align: left; background: #f1f2f6; padding: 15px; border-radius: 8px;">
+                <strong>【ヒント】</strong><br>
+                ・青色リトマス紙が赤くなる → <strong>酸性</strong><br>
+                ・赤色リトマス紙が青くなる → <strong>アルカリ性</strong><br>
+                ・アルミニウムを溶かす（あわが出る）のは、塩酸（酸性）や 水酸化ナトリウム水溶液（アルカリ性）です。
+            </div>
+
+            <div style="margin-top: 20px;">
+                <a href="index.html" style="color: #4CAF50; text-decoration: none; font-weight:bold;">← メニューに戻る</a>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        // 液体の正体（A: 酸性, B: 中性, C: アルカリ性）
+        const liquids = {
+            'A': { type: 'acid', name: '酸性（塩酸など）' },
+            'B': { type: 'neutral', name: '中性（食塩水など）' },
+            'C': { type: 'alkali', name: 'アルカリ性（水酸化ナトリウムなど）' }
+        };
+
+        let currentTool = null;
+        const monitor = document.getElementById('monitor');
+
+        // アイテムを選択する
+        function selectTool(tool) {
+            currentTool = tool;
+            
+            // ボタンの見た目をリセット
+            document.querySelectorAll('.tool-btn').forEach(btn => btn.classList.remove('selected'));
+            
+            // 選んだボタンを強調
+            document.getElementById('tool-' + tool).classList.add('selected');
+
+            let toolName = "";
+            if(tool === 'red') toolName = "「赤色リトマス紙」";
+            if(tool === 'blue') toolName = "「青色リトマス紙」";
+            if(tool === 'al') toolName = "「アルミニウム片」";
+
+            monitor.innerText = toolName + " を手に持った！\nどの液体に入れますか？";
+        }
+
+        // ビーカーにアイテムを入れる
+        function useTool(beakerId) {
+            if (!currentTool) {
+                monitor.innerText = "⚠️ 先に上のアイテム（リトマス紙など）を選んでください。";
+                return;
+            }
+
+            const liquidType = liquids[beakerId].type;
+            let resultMessage = `液体 ${beakerId} にアイテムを入れた。\n`;
+
+            // すべての泡アニメーションを一旦止める
+            document.getElementById('bubble-A').style.opacity = 0;
+            document.getElementById('bubble-B').style.opacity = 0;
+            document.getElementById('bubble-C').style.opacity = 0;
+
+            // 実験の判定
+            if (currentTool === 'red') {
+                if (liquidType === 'alkali') resultMessage += "🟦 赤色リトマス紙が『青色』に変わった！";
+                else resultMessage += "変化なし。（赤色のまま）";
+            } 
+            else if (currentTool === 'blue') {
+                if (liquidType === 'acid') resultMessage += "🟥 青色リトマス紙が『赤色』に変わった！";
+                else resultMessage += "変化なし。（青色のまま）";
+            } 
+            else if (currentTool === 'al') {
+                if (liquidType === 'acid' || liquidType === 'alkali') {
+                    resultMessage += "🫧 シュワシュワとあわを出してアルミニウムが溶け出した！";
+                    document.getElementById('bubble-' + beakerId).style.opacity = 1; // 泡を出す
+                } else {
+                    resultMessage += "変化なし。（アルミニウムは溶けない）";
+                }
+            }
+
+            monitor.innerText = resultMessage;
+        }
+    </script>
+</body>
+</html>
