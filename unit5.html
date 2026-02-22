@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>5. てこのはたらき - 理科アプリ</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        .lever-box {
+            background: #fff; padding: 20px; border-radius: 10px;
+            max-width: 700px; margin: 20px auto; box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        
+        /* てこの図解エリア */
+        .stage {
+            height: 250px; position: relative; margin-top: 50px;
+            display: flex; flex-direction: column; align-items: center; justify-content: flex-end;
+        }
+        
+        /* てこの棒 */
+        .lever-bar {
+            width: 600px; height: 15px; background: #8b4513; border-radius: 10px;
+            position: absolute; bottom: 50px; transform-origin: center;
+            transition: transform 0.5s ease-in-out;
+            display: flex; justify-content: space-between; align-items: center;
+        }
+        
+        /* メモリ（目印） */
+        .mark { width: 5px; height: 15px; background: rgba(255,255,255,0.5); }
+        
+        /* 支点（さんかく） */
+        .fulcrum {
+            width: 0; height: 0;
+            border-left: 30px solid transparent;
+            border-right: 30px solid transparent;
+            border-bottom: 50px solid #7f8c8d;
+            position: absolute; bottom: 0;
+        }
+
+        /* 作用点の重い岩 */
+        .rock {
+            font-size: 50px; position: absolute; bottom: 15px; left: 50px; /* 左から2番目のメモリ */
+            transition: bottom 0.5s;
+        }
+        .rock-label {
+            position: absolute; top: -30px; left: 0; font-size: 0.8rem;
+            background: #e74c3c; color: white; padding: 2px 5px; border-radius: 3px;
+        }
+
+        /* 力点の押す手 */
+        .hand {
+            font-size: 50px; position: absolute; top: -60px; right: 50px; /* 初期位置 */
+            transition: right 0.3s;
+        }
+        .hand-label {
+            position: absolute; top: -30px; right: 0; font-size: 0.8rem;
+            background: #3498db; color: white; padding: 2px 5px; border-radius: 3px;
+        }
+
+        .controls {
+            background: #f1f2f6; padding: 20px; border-radius: 10px; margin-top: 20px;
+        }
+        .distance-btns { display: flex; justify-content: center; gap: 10px; margin-bottom: 15px; }
+        .distance-btns button {
+            padding: 10px 15px; font-size: 1rem; cursor: pointer; border: 2px solid #3498db;
+            background: white; border-radius: 5px; font-weight: bold;
+        }
+        .distance-btns button.active { background: #3498db; color: white; }
+        
+        .push-btn {
+            background: #e74c3c; color: white; font-size: 1.5rem; font-weight: bold;
+            padding: 15px 40px; border: none; border-radius: 10px; cursor: pointer;
+            box-shadow: 0 4px 0 #c0392b; transition: 0.1s;
+        }
+        .push-btn:active { transform: translateY(4px); box-shadow: none; }
+
+        .result {
+            margin-top: 20px; font-size: 1.2rem; font-weight: bold; min-height: 60px;
+        }
+        .force-meter {
+            width: 100%; height: 30px; background: #ddd; border-radius: 15px; margin-top: 10px; overflow: hidden;
+        }
+        .force-fill { height: 100%; width: 0%; background: #e74c3c; transition: width 0.5s; }
+    </style>
+</head>
+<body>
+    <header>
+        <h1 style="color:white;">⚖️ 5. てこのはたらき</h1>
+        <p>「力点」の位置を変えて、重い岩を持ち上げてみよう！</p>
+    </header>
+
+    <main>
+        <div class="lever-box">
+            
+            <div class="stage">
+                <div class="lever-bar" id="lever">
+                    <div class="mark"></div><div class="mark"></div><div class="mark"></div>
+                    <div class="mark"></div><div class="mark"></div><div class="mark"></div><div class="mark"></div>
+                    
+                    <div class="rock">
+                        <div class="rock-label">作用点</div>
+                        🪨
+                    </div>
+                    
+                    <div class="hand" id="hand">
+                        <div class="hand-label">力点</div>
+                        👇
+                    </div>
+                </div>
+                <div class="fulcrum">
+                    <div style="position: absolute; top: 50px; left: -15px; font-size: 0.8rem; font-weight:bold;">支点</div>
+                </div>
+            </div>
+
+            <div class="controls">
+                <h3>力点（押す場所）をどこにする？</h3>
+                <div class="distance-btns">
+                    <button id="btn-1" onclick="setDistance(1)">支点に近い（目盛り1）</button>
+                    <button id="btn-2" onclick="setDistance(2)">真ん中（目盛り2）</button>
+                    <button id="btn-3" class="active" onclick="setDistance(3)">支点から遠い（目盛り3）</button>
+                </div>
+                
+                <button class="push-btn" onclick="pushLever()">グッと押す！</button>
+                
+                <div class="result" id="result-msg">
+                    必要なパワー: ???
+                    <div class="force-meter"><div class="force-fill" id="force-fill"></div></div>
+                </div>
+            </div>
+
+            <div style="margin-top: 20px; text-align: left;">
+                <a href="index.html" style="color: #4CAF50; text-decoration: none; font-weight:bold;">← メニューに戻る</a>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        // 設定値
+        // 岩の重さ＝60、支点からの距離＝1（左側）
+        // つまり、釣り合わせるのに必要な力 × 距離 ＝ 60 × 1 ＝ 60
+        const rockMoment = 60; 
+        
+        let effortDistance = 3; // 力点の距離（初期値は一番遠い3）
+        const lever = document.getElementById('lever');
+        const hand = document.getElementById('hand');
+        const resultMsg = document.getElementById('result-msg');
+        const forceFill = document.getElementById('force-fill');
+
+        // 力点の位置を変更する
+        function setDistance(distance) {
+            effortDistance = distance;
+            
+            // ボタンの見た目更新
+            document.getElementById('btn-1').classList.remove('active');
+            document.getElementById('btn-2').classList.remove('active');
+            document.getElementById('btn-3').classList.remove('active');
+            document.getElementById('btn-' + distance).classList.add('active');
+
+            // 手のアイコン（力点）の位置を移動
+            // 目盛り1=150px, 目盛り2=50px, 目盛り3=-50pxくらい（右端基準で調整）
+            if(distance === 1) hand.style.right = "250px";
+            if(distance === 2) hand.style.right = "150px";
+            if(distance === 3) hand.style.right = "50px";
+
+            // 押す前にリセット
+            lever.style.transform = "rotate(0deg)";
+            forceFill.style.width = "0%";
+            resultMsg.innerHTML = "必要なパワー: ???<div class='force-meter'><div class='force-fill' id='force-fill'></div></div>";
+        }
+
+        // てこを押す
+        function pushLever() {
+            // 必要な力 ＝ 岩のモーメント(60) ÷ 力点の距離
+            const requiredForce = rockMoment / effortDistance;
+            
+            // パワーメーターの表示（最大100%とする）
+            const forcePercent = (requiredForce / 60) * 100;
+            const newForceFill = document.getElementById('force-fill');
+            newForceFill.style.width = forcePercent + "%";
+
+            // てこを傾けるアニメーション（右下がり）
+            lever.style.transform = "rotate(15deg)";
+
+            // 結果のメッセージ
+            if (effortDistance === 3) {
+                newForceFill.style.background = "#2ecc71"; // 緑（楽勝）
+                resultMsg.innerHTML = `必要なパワー: <strong>小（${requiredForce}）</strong><br>支点から遠いので、とても軽い力で持ち上がった！✨` + resultMsg.innerHTML.split('???')[1];
+            } else if (effortDistance === 2) {
+                newForceFill.style.background = "#f1c40f"; // 黄色（普通）
+                resultMsg.innerHTML = `必要なパワー: <strong>中（${requiredForce}）</strong><br>少し力が必要だった。` + resultMsg.innerHTML.split('???')[1];
+            } else {
+                newForceFill.style.background = "#e74c3c"; // 赤（激重）
+                resultMsg.innerHTML = `必要なパワー: <strong>大（${requiredForce}）</strong><br>支点に近すぎる！重くて指が折れそうだ！💦` + resultMsg.innerHTML.split('???')[1];
+            }
+        }
+
+        // 初期設定を反映
+        setDistance(3);
+    </script>
+</body>
+</html>
