@@ -52,3 +52,7 @@ GitHub の `Settings` → `Pages` で、`main` ブランチのルートを公開
 ## 動作条件
 
 最近の Chrome、Edge、Safari、Firefox。学習記録は利用中のブラウザ内にだけ保存され、別端末とは同期されません。
+
+## 公開ページ
+
+[GitHub Pagesで開く](https://tt-sensei.github.io/rika6nen/)
