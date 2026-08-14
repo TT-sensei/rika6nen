@@ -53,6 +53,7 @@
     const parts = location.hash.replace(/^#\/?/, "").split("/").filter(Boolean);
     if (parts[0] === "unit") return { page: "unit", unitId: parts[1], phase: PHASES[parts[2]] ? parts[2] : "knowledge", index: Math.max(0, Number(parts[3]) || 0) };
     if (parts[0] === "review") return { page: "review" };
+    if (parts[0] === "discoveries") return { page: "discoveries" };
     return { page: "home" };
   }
 
@@ -71,7 +72,7 @@
           <div class="progress-label"><span>全体の学習記録</span><span>${progress.done} / ${progress.total}</span></div>
           <div class="progress-track" role="progressbar" aria-label="全体の進み具合" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${progress.percent}"><div class="progress-fill" style="width:${progress.percent}%"></div></div>
         </div>
-      </section>
+      </section>${window.ScienceGame ? window.ScienceGame.panel() : ""}
       <div class="section-heading"><h2>9つの単元</h2><p>学びたい単元を選ぼう</p></div>
       <section class="unit-grid" aria-label="単元一覧">
         ${window.SCIENCE_UNITS.map((unit, index) => `
@@ -187,7 +188,7 @@
   }
 
   function recordAttempt(ctx, correct, wrongCardIndexes = []) {
-    const key = activityKey(ctx.unit.id, ctx.phase, ctx.item.id);
+    const key = activityKey(ctx.unit.id, ctx.phase, ctx.item.id), wasCompleted = !!data.completed[key];
     if (!data.attempts[key]) data.attempts[key] = { count: 0, firstCorrect: null };
     const attempt = data.attempts[key];
     attempt.count += 1;
@@ -195,6 +196,7 @@
     if (correct) data.completed[key] = true;
     wrongCardIndexes.forEach(i => { data.mistakes[`${key}.${i}`] = (data.mistakes[`${key}.${i}`] || 0) + 1; });
     save();
+    window.ScienceGame?.award({ unitId: ctx.unit.id, phase: ctx.phase, itemId: ctx.item.id, correct, wasCompleted, unitComplete: correct && completedCount(ctx.unit) === totalActivities(ctx.unit) });
   }
 
   function checkAnswer() {
@@ -350,6 +352,7 @@
     const route = parseRoute();
     if (route.page === "unit") renderUnit(route);
     else if (route.page === "review") renderReview();
+    else if (route.page === "discoveries") app.innerHTML = window.ScienceGame?.catalog() || "";
     else renderHome();
     app.focus({ preventScroll: true });
   }
@@ -359,6 +362,7 @@
     if (!target) return;
     const route = parseRoute();
     if (target.matches("[data-home]")) routeTo("");
+    else if (target.matches("[data-discoveries]")) routeTo("discoveries");
     else if (target.dataset.unit) routeTo(`unit/${target.dataset.unit}/knowledge/0`);
     else if (target.dataset.phase && route.page === "unit") routeTo(`unit/${route.unitId}/${target.dataset.phase}/0`);
     else if (target.dataset.index && route.page === "unit") routeTo(`unit/${route.unitId}/${route.phase}/${target.dataset.index}`);
