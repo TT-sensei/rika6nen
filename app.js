@@ -295,12 +295,11 @@
         <div class="choices">${item.choices.map((choice,i)=>`<button class="choice" data-review-choice="${i}">${escapeHtml(choice)}</button>`).join("")}</div>
         <div class="answer-area"></div>
       </article>`;
-    }
-
     app.querySelectorAll("[data-review-choice]").forEach(button => button.addEventListener("click", event => {
       event.stopPropagation();
       answerReview(Number(button.dataset.reviewChoice));
     }));
+  }
 
   function answerReview(choiceIndex) {
     if (!reviewState || reviewState.finished || reviewState.answered) return;
