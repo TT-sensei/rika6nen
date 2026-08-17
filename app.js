@@ -343,7 +343,7 @@
     else if (route.page === "review") renderReview();
     else if (route.page === "discoveries") app.innerHTML = window.ScienceGame?.catalog() || "";
     else renderHome();
-    app.focus({ preventScroll: true });
+    app.focus({ preventScroll: true }); window.scrollTo({ top: 0, behavior: "smooth" });
   }
 
   document.addEventListener("click", event => {
