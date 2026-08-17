@@ -343,7 +343,7 @@
     else if (route.page === "review") renderReview();
     else if (route.page === "discoveries") app.innerHTML = window.ScienceGame?.catalog() || "";
     else renderHome();
-    app.focus({ preventScroll: true }); window.scrollTo({ top: 0, behavior: "smooth" });
+    app.focus({ preventScroll: true }); const focusCard = document.querySelector(".activity-card"); if (focusCard) { const headerHeight = document.querySelector(".site-header")?.getBoundingClientRect().height || 0; const targetTop = focusCard.getBoundingClientRect().top + window.scrollY - headerHeight - 14; window.scrollTo({ top: Math.max(0, targetTop), behavior: "smooth" }); } else { window.scrollTo({ top: 0, behavior: "smooth" }); }
   }
 
   document.addEventListener("click", event => {
