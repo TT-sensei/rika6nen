@@ -298,39 +298,13 @@
   }
 
   function startReview() {
-    const preferred = [1,0,0,0,1,0,2,2,0];
-    reviewState = {
-      index: 0, score: 0, misses: [], finished: false,
-      questions: window.SCIENCE_UNITS.map((unit, i) => ({ unitId: unit.id, item: unit.knowledge[preferred[i] || 0] }))
-    };
+    const pick = (items, count) => [...items].sort(() => Math.random() - .5).slice(0, Math.min(count, items.length));
+    const questions = window.SCIENCE_UNITS.flatMap(unit => {
+      const pool = [...(unit.knowledge || []), ...(unit.consideration || [])];
+      return pick(pool, 3).map(item => ({ unitId: unit.id, item }));
+    }).sort(() => Math.random() - .5);
+    reviewState = { index: 0, score: 0, misses: [], finished: false, questions };
   }
-
-  function answerReview(choiceIndex) {
-    const entry = reviewState.questions[reviewState.index];
-    const correct = choiceIndex === entry.item.answer;
-    if (correct) reviewState.score += 1;
-    else reviewState.misses.push(entry);
-    document.querySelectorAll("[data-review-choice]").forEach((el,i) => {
-      el.disabled = true;
-      if (i === entry.item.answer) el.classList.add("correct");
-      if (i === choiceIndex && !correct) el.classList.add("wrong");
-    });
-    showFeedback(correct, entry.item.explanation);
-    playTone(correct);
-    const area = document.querySelector(".answer-area");
-    const next = document.createElement("button");
-    next.className = "primary-button";
-    next.style.marginTop = "14px";
-    next.textContent = reviewState.index === reviewState.questions.length - 1 ? "結果を見る" : "次の問題へ";
-    next.addEventListener("click", () => {
-      reviewState.index += 1;
-      if (reviewState.index >= reviewState.questions.length) reviewState.finished = true;
-      renderReview();
-      window.scrollTo({ top: 0, behavior: "smooth" });
-    });
-    area.append(next);
-  }
-
   function renderReviewResult() {
     const percent = Math.round(reviewState.score / reviewState.questions.length * 100);
     app.innerHTML = `<article class="activity-card review-card review-result">
