@@ -324,7 +324,7 @@
     const pick = (items, count) => [...items].sort(() => Math.random() - .5).slice(0, Math.min(count, items.length));
     const questions = window.SCIENCE_UNITS.flatMap(unit => {
       const pool = [...(unit.knowledge || []), ...(unit.consideration || [])];
-      return pick(pool, 3).map(item => ({ unitId: unit.id, item }));
+      return pick(pool, 1).map(item => ({ unitId: unit.id, item }));
     }).sort(() => Math.random() - .5);
     reviewState = { index: 0, score: 0, misses: [], finished: false, answered: false, questions };
   }
