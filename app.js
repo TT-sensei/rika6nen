@@ -297,6 +297,11 @@
       </article>`;
   }
 
+    app.querySelectorAll("[data-review-choice]").forEach(button => button.addEventListener("click", event => {
+      event.stopPropagation();
+      answerReview(Number(button.dataset.reviewChoice));
+    }));
+
   function startReview() {
     const pick = (items, count) => [...items].sort(() => Math.random() - .5).slice(0, Math.min(count, items.length));
     const questions = window.SCIENCE_UNITS.flatMap(unit => {
@@ -366,7 +371,6 @@
     else if (target.dataset.nextBatch && route.page === "unit") routeTo(`unit/${route.unitId}/${route.phase}/0`);
     else if (target.dataset.nextPhase === "home") routeTo("");
     else if (target.dataset.nextPhase && route.page === "unit") routeTo(`unit/${route.unitId}/${target.dataset.nextPhase}/0`);
-    else if (target.dataset.reviewChoice) answerReview(Number(target.dataset.reviewChoice));
     else if (target.matches("[data-retry-review]")) { reviewState = null; renderReview(); }
   });
 
