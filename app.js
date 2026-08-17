@@ -236,7 +236,7 @@
       button.disabled = false;
       button.textContent = "解き直す";
       button.removeAttribute("data-check");
-      button.dataset.retryQuestion = "true";
+      button.setAttribute("data-retry-question", "true");
     }
   }
 
@@ -295,12 +295,30 @@
         <div class="choices">${item.choices.map((choice,i)=>`<button class="choice" data-review-choice="${i}">${escapeHtml(choice)}</button>`).join("")}</div>
         <div class="answer-area"></div>
       </article>`;
-  }
-
     app.querySelectorAll("[data-review-choice]").forEach(button => button.addEventListener("click", event => {
       event.stopPropagation();
       answerReview(Number(button.dataset.reviewChoice));
     }));
+  }
+
+  function answerReview(choiceIndex) {
+    if (!reviewState || reviewState.finished || reviewState.answered) return;
+    const entry = reviewState.questions[reviewState.index];
+    const item = entry.item;
+    const correct = choiceIndex === item.answer;
+    reviewState.answered = true;
+    if (correct) reviewState.score += 1;
+    else reviewState.misses.push(entry);
+
+    app.querySelectorAll("[data-review-choice]").forEach((button, index) => {
+      button.disabled = true;
+      if (index === item.answer) button.classList.add("correct");
+      if (index === choiceIndex && !correct) button.classList.add("wrong");
+    });
+
+    const answerArea = app.querySelector(".answer-area");
+    answerArea.innerHTML = `<div class="feedback ${correct ? "correct" : "wrong"}"><b>${correct ? "正解！" : "もう一度考えよう"}</b>${escapeHtml(item.explanation)}</div><button class="primary-button review-next" data-review-next type="button">${reviewState.index < reviewState.questions.length - 1 ? "次の問題へ" : "結果を見る"}</button>`;
+  }
 
   function startReview() {
     const pick = (items, count) => [...items].sort(() => Math.random() - .5).slice(0, Math.min(count, items.length));
@@ -308,7 +326,7 @@
       const pool = [...(unit.knowledge || []), ...(unit.consideration || [])];
       return pick(pool, 3).map(item => ({ unitId: unit.id, item }));
     }).sort(() => Math.random() - .5);
-    reviewState = { index: 0, score: 0, misses: [], finished: false, questions };
+    reviewState = { index: 0, score: 0, misses: [], finished: false, answered: false, questions };
   }
   function renderReviewResult() {
     const percent = Math.round(reviewState.score / reviewState.questions.length * 100);
@@ -366,6 +384,12 @@
     else if (target.dataset.unassign) unassignCard(Number(target.dataset.unassign));
     else if (target.matches("[data-check]")) checkAnswer();
     else if (target.matches("[data-retry-question]")) render();
+    else if (target.matches("[data-review-next]")) {
+      reviewState.answered = false;
+      reviewState.index += 1;
+      if (reviewState.index >= reviewState.questions.length) reviewState.finished = true;
+      render();
+    }
     else if (target.matches("[data-prev]") && route.page === "unit") routeTo(`unit/${route.unitId}/${route.phase}/${Math.max(0, route.index-1)}`);
     else if (target.dataset.next && route.page === "unit") routeTo(`unit/${route.unitId}/${route.phase}/${target.dataset.next}`);
     else if (target.dataset.nextBatch && route.page === "unit") routeTo(`unit/${route.unitId}/${route.phase}/0`);
