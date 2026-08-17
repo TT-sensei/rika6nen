@@ -291,7 +291,7 @@
     const item = entry.item;
     app.innerHTML = `<div class="review-head"><div><p class="eyebrow">9単元のテスト対策</p><h1>まとめチェック</h1><p>各単元の中心を1問ずつ確かめます。</p></div><b>${reviewState.index + 1} / ${reviewState.questions.length}</b></div>
       <article class="activity-card review-card" style="${unitStyle(unit)}">
-        <span class="activity-count">${unit.icon} ${unit.title}</span><h2>${item.prompt}</h2>
+        <span class="activity-count">${unit.icon} ${unit.title}</span><h2>${item.prompt || item.question}</h2>
         <div class="choices">${item.choices.map((choice,i)=>`<button class="choice" data-review-choice="${i}">${escapeHtml(choice)}</button>`).join("")}</div>
         <div class="answer-area"></div>
       </article>`;
@@ -311,7 +311,7 @@
       <p class="eyebrow">まとめチェック結果</p><div class="result-ring" style="--score:${percent}%"><b>${reviewState.score} / ${reviewState.questions.length}</b></div>
       <h1>${percent === 100 ? "全問正解！" : percent >= 70 ? "あと少しでばっちり！" : "まちがいは、伸びる場所。"}</h1>
       <p>${reviewState.misses.length ? "確かめたい単元へ戻って、証拠と説明をもう一度つなげよう。" : "9単元の中心がしっかりつながっています。"}</p>
-      ${reviewState.misses.length ? `<div class="miss-list">${reviewState.misses.map(entry => { const unit=unitById(entry.unitId); return `<button class="miss-item text-button" data-unit="${unit.id}">${unit.icon} ${unit.title}：${escapeHtml(entry.item.prompt)}</button>`; }).join("")}</div>` : ""}
+      ${reviewState.misses.length ? `<div class="miss-list">${reviewState.misses.map(entry => { const unit=unitById(entry.unitId); return `<button class="miss-item text-button" data-unit="${unit.id}">${unit.icon} ${unit.title}：${escapeHtml(entry.item.prompt || entry.item.question)}</button>`; }).join("")}</div>` : ""}
       <div class="action-row"><button class="secondary-button" data-home>単元一覧へ</button><button class="primary-button" data-retry-review>もう一度</button></div>
     </article>`;
   }
