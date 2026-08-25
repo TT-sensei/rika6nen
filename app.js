@@ -410,6 +410,7 @@
   function render() {
     const route = parseRoute();
     app.classList.toggle("lab-main", route.page === "lab" || route.page === "lab-notebook");
+    if (route.page !== "lab" && route.page !== "lab-notebook") window.RikaLabRouter?.leave?.();
     if (route.page === "unit") renderUnit(route);
     else if (route.page === "review") renderReview();
     else if (route.page === "discoveries") app.innerHTML = window.ScienceGame?.catalog() || "";
