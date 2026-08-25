@@ -32,10 +32,15 @@
   }
 
   function airflow(s) {
-    if (!s.flow || !s.covered) return "";
+    if (!s.flow) return "";
+    if (!s.covered) {
+      const around = many(5, i => `<path class="air-in" d="M${245+i*55} 390q${i%2?18:-18}-72 75-130" style="--delay:${i*.2}s"/>`);
+      return `<g class="airflow"><text x="610" y="90" class="flow-label">周りの空気が動いている</text>${around}<path class="air-arrow" d="M450 270l-10 18h20z"/></g>`;
+    }
     const inFlow = s.bottomGap ? many(4, i => `<path class="air-in" d="M${300+i*45} 420q0-75 42-126" style="--delay:${i*.2}s"/>`) : "";
     const outFlow = s.topGap ? many(4, i => `<path class="air-out" d="M${500+i*27} 115q35-45 50-78" style="--delay:${i*.2}s"/>`) : "";
-    return `<g class="airflow"><text x="610" y="90" class="flow-label">空気の流れ</text>${inFlow}${outFlow}</g>`;
+    const note = s.bottomGap || s.topGap ? "入口から入り、出口から出る" : "すき間がないので流れにくい";
+    return `<g class="airflow"><text x="610" y="90" class="flow-label">${note}</text>${inFlow}${outFlow}${s.bottomGap?'<path class="air-arrow" d="M450 294l-10 18h20z"/>':''}${s.topGap?'<path class="air-arrow out" d="M550 42l-10 18h20z"/>':''}</g>`;
   }
 
   function scene(s, m) {
@@ -48,7 +53,7 @@
   }
 
   function controls(s) {
-    return `<div class="burn-control-grid"><button type="button" data-action="cover">${s.covered ? "集気びんを外す" : "集気びんをかぶせる"}</button><button type="button" data-action="bottom">下のすき間：${s.bottomGap ? "あり" : "なし"}</button><button type="button" data-action="top">上の出口：${s.topGap ? "あり" : "なし"}</button><button type="button" data-action="lighter">${s.lit ? "燃焼を止める" : "点火する"}</button></div><label class="burn-toggle"><input type="checkbox" data-toggle="flow" ${s.flow?"checked":""}> 空気の流れを見る</label><label class="burn-toggle"><input type="checkbox" data-toggle="inside" ${s.inside?"checked":""}> 🔍 空気の中を見る</label><div class="burn-speed"><b>時間の速さ</b><button type="button" data-speed=".25">🐢 ×0.25</button><button type="button" data-speed="1">▶ ×1</button><button type="button" data-speed="2">▶▶ ×2</button></div>`;
+    return `<div class="burn-control-grid"><button type="button" data-action="lighter">① ${s.lit ? "燃焼を止める" : "点火する"}</button><button type="button" data-action="cover">② ${s.covered ? "集気びんを外す" : "集気びんをかぶせる"}</button><button type="button" data-action="bottom">③ 下のすき間：${s.bottomGap ? "あり" : "なし"}</button><button type="button" data-action="top">④ 上の出口：${s.topGap ? "あり" : "なし"}</button></div><label class="burn-toggle"><input type="checkbox" data-toggle="flow" ${s.flow?"checked":""}> 空気の流れを見る（最初からON）</label><label class="burn-toggle"><input type="checkbox" data-toggle="inside" ${s.inside?"checked":""}> 🔍 空気の中を見る</label><div class="burn-speed"><b>時間の速さ</b><button type="button" data-speed=".25">🐢 ×0.25</button><button type="button" data-speed="1">▶ ×1</button><button type="button" data-speed="2">▶▶ ×2</button></div>`;
   }
 
   function card(s,m) { return `<div class="burn-metrics"><div><span>酸素</span><b>${s.oxygen.toFixed(1)}%</b><small>${s.oxygen > 17 ? "多い" : s.oxygen > 9 ? "減っている" : "少ない"}</small></div><div><span>二酸化炭素</span><b>${s.co2.toFixed(1)}%</b><small>${s.co2 > .5 ? "増えている" : "少ない"}</small></div><div><span>燃焼時間</span><b>${s.time.toFixed(1)}秒</b><small>${s.lit ? "燃焼中" : s.time ? "消火" : "未実験"}</small></div></div><div class="burn-bars"><span>酸素</span><i><em style="width:${s.oxygen/21*100}%"></em></i><span>二酸化炭素</span><i class="co2"><em style="width:${clamp(s.co2/18*100,0,100)}%"></em></i></div>`; }
