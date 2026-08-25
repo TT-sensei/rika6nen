@@ -73,9 +73,7 @@
             <h2>${lab.title}</h2><p>${lab.summary}</p><b>実験を始める →</b>
           </button>`).join("")}</div>
       </section>
-      <section class="future-labs" aria-labelledby="futureLabs"><div class="section-heading"><h2 id="futureLabs">もっと試してみる</h2><p>7つの新しいシミュレーターを追加しました</p></div>
-        <div class="future-lab-grid">${Object.values(MANIFESTS).filter(lab => !["lever","moon"].includes(lab.id)).map(lab => `<button class="lab-card" type="button" data-lab-id="${lab.id}" style="--lab-accent:${lab.accent}"><span class="lab-card-icon">${lab.icon}</span><span class="lab-card-tag">${lab.unit}</span><h2>${lab.title}</h2><p>${lab.summary}</p><b>実験を始める →</b></button>`).join("")}</div>
-      </section>`;
+      `;
   }
 
   async function render(route, root, host) {
