@@ -78,31 +78,14 @@
   function renderHome() {
     const progress = overall();
     app.innerHTML = `
-      <section class="hero">
-        <p class="eyebrow">小学6年生 理科</p>
-        <h1>見えないしくみを、<br>証拠から考えよう。</h1>
-        <p>現象を触って条件を変えるLABと、実験・観察を考える9つの単元。結果を比べ、証拠から自分の言葉で説明する力を育てます。</p>
-        <div class="overall-progress">
-          <div class="progress-label"><span>全体の学習記録</span><span>${progress.done} / ${progress.total}</span></div>
-          <div class="progress-track" role="progressbar" aria-label="全体の進み具合" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${progress.percent}"><div class="progress-fill" style="width:${progress.percent}%"></div></div>
-        </div>
+      <section class="home-hero">
+        <div class="home-hero-copy"><p class="eyebrow">小学6年生 理科</p><h1>答えを当てる前に、<br><em>現象を動かそう。</em></h1><p>てこを傾ける。月を動かす。炎や電気の変化を観察する。理科ラボは、触って試して、きまりを見つける学習室です。</p><div class="home-actions"><button class="primary-button" type="button" data-open-labs>シミュレーターを選ぶ</button><button class="home-link-button" type="button" data-scroll-units>問題で学ぶ</button></div></div>
+        <div class="home-hero-diagram" aria-label="理科ラボでできること"><div class="orbit orbit-one"></div><div class="orbit orbit-two"></div><span class="diagram-sun">☀</span><span class="diagram-earth">●</span><span class="diagram-moon">●</span><b>操作</b><b>観察</b><b>発見</b></div>
       </section>
-      <section class="lab-entrance" aria-labelledby="labEntranceTitle">
-        <div class="lab-entrance-copy">
-          <p class="eyebrow">SCIENCE LAB</p>
-          <h2 id="labEntranceTitle">触って、変えて、きまりを見つける。</h2>
-          <p>条件を動かして何度でも実験。現象の変化を見ながら、きまりを見つけます。</p>
-          <div class="lab-entrance-actions">
-            <button class="primary-button" type="button" data-open-labs>LABをひらく</button>
-            <button class="secondary-button" type="button" data-open-labs>シミュレーター一覧</button>
-          </div>
-        </div>
-        <div class="lab-preview" aria-label="公開中のLAB">
-          <button type="button" data-lab-id="lever"><span>⚖️</span><b>てこLAB</b><small>重さと距離を動かす</small></button>
-          <button type="button" data-lab-id="moon"><span>🌗</span><b>月と太陽LAB</b><small>2つの見方を比べる</small></button>
-        </div>
+      <section class="home-lab-section" aria-labelledby="homeLabTitle"><div class="home-section-heading"><div><p class="eyebrow">SCIENCE LAB</p><h2 id="homeLabTitle">まずは、触ってみよう</h2><p>シミュレーターは、途中でやめても、何度やり直しても大丈夫。</p></div><button class="secondary-button" type="button" data-open-labs>LAB一覧を見る</button></div>
+        <div class="home-lab-grid"><button class="home-lab-card featured" type="button" data-lab-id="lever"><span class="home-lab-visual lever-visual">⚖</span><span><small>てこのはたらき</small><strong>てこLAB</strong><b>支点とおもりを動かす</b></span><i>→</i></button><button class="home-lab-card featured moon-card" type="button" data-lab-id="moon"><span class="home-lab-visual moon-visual">◐</span><span><small>月と太陽</small><strong>月と太陽LAB</strong><b>月を動かして満ち欠けを見る</b></span><i>→</i></button></div>
       </section>${window.ScienceGame ? window.ScienceGame.panel() : ""}
-      <div class="section-heading"><h2>9つの単元</h2><p>学びたい単元を選ぼう</p></div>
+      <section class="home-learning-section" id="unit-learning"><div class="home-section-heading"><div><p class="eyebrow">LEARNING MAP</p><h2>問題で確かめる9単元</h2><p>シミュレーターで見つけたことを、問題と考察で整理します。</p></div><div class="home-progress-pill"><b>${progress.percent}%</b><span>全体の学習</span></div></div>
       <section class="unit-grid" aria-label="単元一覧">
         ${window.SCIENCE_UNITS.map((unit, index) => `
           <button class="unit-card" data-unit="${unit.id}" style="${unitStyle(unit)}">
@@ -110,7 +93,7 @@
             <h3>${unit.title}</h3><p>${unit.summary}</p>
             <span class="mini-progress"><span class="progress-track"><span class="progress-fill" style="width:${unitPercent(unit)}%"></span></span><span>${unitPercent(unit)}%</span></span>
           </button>`).join("")}
-      </section>`;
+      </section></section>`;
   }
 
   function renderUnit(route) {
@@ -423,6 +406,7 @@
     if (!target) return;
     const route = parseRoute();
     if (target.matches("[data-home]")) routeTo("");
+    else if (target.matches("[data-scroll-units]")) document.querySelector("#unit-learning")?.scrollIntoView({ behavior: "smooth", block: "start" });
     else if (target.matches("[data-open-labs], [data-lab-home]")) routeTo("lab");
     else if (target.dataset.labId) routeTo(`lab/${target.dataset.labId}`);
     else if (target.matches("[data-discoveries]")) routeTo("discoveries");
