@@ -95,7 +95,7 @@
           <p>予想したら、条件を動かして何度でも実験。結果をLABノートへ残し、前の実験と比べられます。</p>
           <div class="lab-entrance-actions">
             <button class="primary-button" type="button" data-open-labs>LABをひらく</button>
-            <button class="secondary-button" type="button" data-lab-notebook>LABノート</button>
+            <button class="secondary-button" type="button" data-open-labs>シミュレーター一覧</button>
           </div>
         </div>
         <div class="lab-preview" aria-label="公開中のLAB">

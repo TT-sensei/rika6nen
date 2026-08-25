@@ -23,6 +23,15 @@
       ready: true
     }
   };
+  [
+    ["burning", "燃焼LAB", "ものの燃え方と空気", "🔥", "酸素の量と空気の通り道で、炎の変化を見ます。", "#c95b38"],
+    ["solutions", "水溶液LAB", "水溶液の性質", "🧪", "指示薬・蒸発・金属の変化を操作して比べます。", "#377a86"],
+    ["electricity", "電気LAB", "電気の利用", "💡", "光・運動・熱へのエネルギーの変換を見ます。", "#bd8a13"],
+    ["plants", "植物LAB", "植物のからだのはたらき", "🌿", "光・水・葉を変えて、水の移動と蒸散を見ます。", "#3f8052"],
+    ["body", "人の体LAB", "動物のからだのはたらき", "🫀", "運動量を変えて、心拍・呼吸・血液の流れを見ます。", "#bd4b62"],
+    ["environment", "生物と環境LAB", "生物と環境", "🕸️", "生物の数を変え、食物連鎖の変化を見ます。", "#4e7d69"],
+    ["earth", "大地LAB", "大地のつくりと変化", "🌋", "水の流れや火山灰で、地層のでき方を見ます。", "#8b6247"]
+  ].forEach(([id,title,unit,icon,summary,accent]) => MANIFESTS[id] = {id,title,unit,icon,summary,accent,script:"labs/extra-labs.js",ready:true});
   const FUTURE = [
     ["🔥", "燃焼LAB", "酸素量と炎"], ["🧪", "水溶液LAB", "性質と変化"],
     ["💡", "電気LAB", "回路と変換"], ["🌿", "植物LAB", "水の通り道"],
@@ -65,8 +74,8 @@
             <h2>${lab.title}</h2><p>${lab.summary}</p><b>実験を始める →</b>
           </button>`).join("")}</div>
       </section>
-      <section class="future-labs" aria-labelledby="futureLabs"><div class="section-heading"><h2 id="futureLabs">これから広がるLAB</h2><p>共通の実験・記録の仕組みで追加予定</p></div>
-        <div class="future-lab-grid">${FUTURE.map(([icon, title, summary]) => `<article><span aria-hidden="true">${icon}</span><b>${title}</b><small>${summary}</small><em>準備中</em></article>`).join("")}</div>
+      <section class="future-labs" aria-labelledby="futureLabs"><div class="section-heading"><h2 id="futureLabs">もっと試してみる</h2><p>7つの新しいシミュレーターを追加しました</p></div>
+        <div class="future-lab-grid">${Object.values(MANIFESTS).filter(lab => !["lever","moon"].includes(lab.id)).map(lab => `<button class="lab-card" type="button" data-lab-id="${lab.id}" style="--lab-accent:${lab.accent}"><span class="lab-card-icon">${lab.icon}</span><span class="lab-card-tag">${lab.unit}</span><h2>${lab.title}</h2><p>${lab.summary}</p><b>実験を始める →</b></button>`).join("")}</div>
       </section>`;
   }
 
