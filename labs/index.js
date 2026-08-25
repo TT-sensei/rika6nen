@@ -41,6 +41,7 @@
       script.onerror = reject;
       document.head.append(script);
     });
+    promise.catch(() => loaded.delete(src));
     loaded.set(src, promise);
     return promise;
   }
@@ -91,5 +92,9 @@
     try { localStorage.removeItem("rikaLab6.notebook.v1"); } catch (_) {}
   }
 
-  window.RikaLabRouter = { render, clearAll, manifests: MANIFESTS };
+  function leave() {
+    if (activeCleanup) { activeCleanup(); activeCleanup = null; }
+  }
+
+  window.RikaLabRouter = { render, leave, clearAll, manifests: MANIFESTS };
 })();
