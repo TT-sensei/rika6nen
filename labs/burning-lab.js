@@ -15,7 +15,10 @@
       // できたときだけ、燃焼を続けられるだけの空気の入れ替わりが起こる。
       const exchange = !s.covered ? 1 : (s.bottomGap && s.topGap ? .82 : 0);
       const burnPower = clamp((s.oxygen - 7) / 14, 0, 1) * (.55 + exchange * .45);
-      const consumed = .23 * burnPower * dt;
+      // 入口・出口がない状態は、観察しやすいよう酸素が約1%/秒で減る。
+      // 開いている条件の燃え方は、これまでの連続モデルを保つ。
+      const sealed = s.covered && !(s.bottomGap && s.topGap);
+      const consumed = sealed ? .9 * dt : .23 * burnPower * dt;
       const supplied = exchange * .32 * (21 - s.oxygen) / 21 * dt;
       s.oxygen = clamp(s.oxygen - consumed + supplied, 0, 21);
       s.co2 = clamp(s.co2 + consumed * .8, .04, 18);
