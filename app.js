@@ -77,13 +77,19 @@
 
   function renderHome() {
     const progress = overall();
+    const homeLabs = [
+      ["burning","🔥","燃焼LAB","酸素と炎の変化"],["solutions","🧪","水溶液LAB","色・蒸発・粒子"],
+      ["lever","⚖","てこLAB","支点とおもり"],["electricity","💡","電気LAB","回路とエネルギー"],
+      ["plants","🌿","植物LAB","水の通り道"],["body","🫀","人の体LAB","呼吸と血液"],
+      ["environment","🕸","生物と環境LAB","個体数の変化"],["moon","◐","月と太陽LAB","月の満ち欠け"],["earth","🌋","大地LAB","堆積と地層"]
+    ];
     app.innerHTML = `
       <section class="home-hero">
         <div class="home-hero-copy"><p class="eyebrow">小学6年生 理科</p><h1>答えを当てる前に、<br><em>現象を動かそう。</em></h1><p>てこを傾ける。月を動かす。炎や電気の変化を観察する。理科ラボは、触って試して、きまりを見つける学習室です。</p><div class="home-actions"><button class="primary-button" type="button" data-open-labs>シミュレーターを選ぶ</button><button class="home-link-button" type="button" data-scroll-units>問題で学ぶ</button></div></div>
         <div class="home-hero-diagram" aria-label="理科ラボでできること"><div class="orbit orbit-one"></div><div class="orbit orbit-two"></div><span class="diagram-sun">☀</span><span class="diagram-earth">●</span><span class="diagram-moon">●</span><b>操作</b><b>観察</b><b>発見</b></div>
       </section>
       <section class="home-lab-section" aria-labelledby="homeLabTitle"><div class="home-section-heading"><div><p class="eyebrow">SCIENCE LAB</p><h2 id="homeLabTitle">まずは、触ってみよう</h2><p>シミュレーターは、途中でやめても、何度やり直しても大丈夫。</p></div><button class="secondary-button" type="button" data-open-labs>LAB一覧を見る</button></div>
-        <div class="home-lab-grid"><button class="home-lab-card featured" type="button" data-lab-id="lever"><span class="home-lab-visual lever-visual">⚖</span><span><small>てこのはたらき</small><strong>てこLAB</strong><b>支点とおもりを動かす</b></span><i>→</i></button><button class="home-lab-card featured moon-card" type="button" data-lab-id="moon"><span class="home-lab-visual moon-visual">◐</span><span><small>月と太陽</small><strong>月と太陽LAB</strong><b>月を動かして満ち欠けを見る</b></span><i>→</i></button></div>
+        <div class="home-lab-grid all-home-labs">${homeLabs.map(([id,icon,title,summary]) => `<button class="home-lab-card" type="button" data-lab-id="${id}"><span class="home-lab-visual ${id}-visual">${icon}</span><span><small>シミュレーター</small><strong>${title}</strong><b>${summary}</b></span><i>→</i></button>`).join("")}</div>
       </section>${window.ScienceGame ? window.ScienceGame.panel() : ""}
       <section class="home-learning-section" id="unit-learning"><div class="home-section-heading"><div><p class="eyebrow">LEARNING MAP</p><h2>問題で確かめる9単元</h2><p>シミュレーターで見つけたことを、問題と考察で整理します。</p></div><div class="home-progress-pill"><b>${progress.percent}%</b><span>全体の学習</span></div></div>
       <section class="unit-grid" aria-label="単元一覧">
