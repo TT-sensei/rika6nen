@@ -11,7 +11,9 @@
 
   function model(s, dt = 0) {
     if (s.lit) {
-      const exchange = s.covered ? (s.bottomGap ? .42 : 0) + (s.topGap ? .38 : 0) : 1;
+      // この学習モデルでは、空気が「入口から入り、出口から出る」通り道が
+      // できたときだけ、燃焼を続けられるだけの空気の入れ替わりが起こる。
+      const exchange = !s.covered ? 1 : (s.bottomGap && s.topGap ? .82 : 0);
       const burnPower = clamp((s.oxygen - 7) / 14, 0, 1) * (.55 + exchange * .45);
       const consumed = .23 * burnPower * dt;
       const supplied = exchange * .32 * (21 - s.oxygen) / 21 * dt;
@@ -20,7 +22,7 @@
       s.time += dt;
       if (s.oxygen < 7 || burnPower < .08) s.lit = false;
     }
-    const exchange = s.covered ? (s.bottomGap ? .42 : 0) + (s.topGap ? .38 : 0) : 1;
+    const exchange = !s.covered ? 1 : (s.bottomGap && s.topGap ? .82 : 0);
     const flame = s.lit ? clamp((s.oxygen - 7) / 14, 0, 1) * (.55 + exchange * .45) : 0;
     return {exchange, flame};
   }
@@ -39,7 +41,7 @@
     }
     const inFlow = s.bottomGap ? many(4, i => `<path class="air-in" d="M${300+i*45} 420q0-75 42-126" style="--delay:${i*.2}s"/>`) : "";
     const outFlow = s.topGap ? many(4, i => `<path class="air-out" d="M${500+i*27} 115q35-45 50-78" style="--delay:${i*.2}s"/>`) : "";
-    const note = s.bottomGap || s.topGap ? "入口から入り、出口から出る" : "すき間がないので流れにくい";
+    const note = s.bottomGap && s.topGap ? "入口から入り、出口から出る" : s.bottomGap ? "入口はあるが、出口がない" : s.topGap ? "出口はあるが、入口がない" : "すき間がないので流れにくい";
     return `<g class="airflow"><text x="610" y="90" class="flow-label">${note}</text>${inFlow}${outFlow}${s.bottomGap?'<path class="air-arrow" d="M450 294l-10 18h20z"/>':''}${s.topGap?'<path class="air-arrow out" d="M550 42l-10 18h20z"/>':''}</g>`;
   }
 
