@@ -64,8 +64,7 @@
     return `
       <nav class="breadcrumbs" aria-label="現在位置"><button class="text-button" type="button" data-home>単元一覧</button><span>›</span><span>LAB</span></nav>
       <section class="lab-library-hero">
-        <div><p class="eyebrow">SCIENCE LAB</p><h1>条件を変えると、何が変わる？</h1><p>答えを当てる場所ではありません。予想して、動かして、記録を比べながら、自分で規則を見つける実験室です。</p></div>
-        <button class="secondary-button" type="button" data-lab-notebook>LABノートを見る</button>
+        <div><p class="eyebrow">SCIENCE LAB</p><h1>条件を変えると、何が変わる？</h1><p>答えを当てる場所ではありません。条件を動かして、現象の変化を見つける実験室です。</p></div>
       </section>
       <section class="lab-library" aria-labelledby="readyLabs"><div class="section-heading"><h2 id="readyLabs">実験できるLAB</h2><p>好きな方から始めよう</p></div>
         <div class="lab-card-grid">${Object.values(MANIFESTS).map(lab => `
@@ -81,11 +80,6 @@
 
   async function render(route, root, host) {
     if (activeCleanup) { activeCleanup(); activeCleanup = null; }
-    if (route.page === "lab-notebook") {
-      const core = await ensureCore();
-      activeCleanup = core.renderNotebookPage(root, host);
-      return;
-    }
     if (!route.labId) { root.innerHTML = catalogMarkup(); return; }
     const manifest = MANIFESTS[route.labId];
     if (!manifest) { root.innerHTML = `<section class="empty-state"><h1>このLABはまだありません</h1><button class="primary-button" type="button" data-lab-home>LAB一覧へ</button></section>`; return; }

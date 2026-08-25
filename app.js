@@ -67,7 +67,6 @@
     if (parts[0] === "unit") return { page: "unit", unitId: parts[1], phase: PHASES[parts[2]] ? parts[2] : "knowledge", index: Math.max(0, Number(parts[3]) || 0) };
     if (parts[0] === "review") return { page: "review" };
     if (parts[0] === "discoveries") return { page: "discoveries" };
-    if (parts[0] === "lab" && parts[1] === "notebook") return { page: "lab-notebook" };
     if (parts[0] === "lab") return { page: "lab", labId: parts[1] || null };
     return { page: "home" };
   }
@@ -92,7 +91,7 @@
         <div class="lab-entrance-copy">
           <p class="eyebrow">SCIENCE LAB</p>
           <h2 id="labEntranceTitle">触って、変えて、きまりを見つける。</h2>
-          <p>予想したら、条件を動かして何度でも実験。結果をLABノートへ残し、前の実験と比べられます。</p>
+          <p>条件を動かして何度でも実験。現象の変化を見ながら、きまりを見つけます。</p>
           <div class="lab-entrance-actions">
             <button class="primary-button" type="button" data-open-labs>LABをひらく</button>
             <button class="secondary-button" type="button" data-open-labs>シミュレーター一覧</button>
@@ -396,7 +395,7 @@
     const token = ++labRenderToken;
     app.innerHTML = `<section class="lab-loading"><span class="lab-loading-mark" aria-hidden="true">⌛</span><h1>LABを準備しています</h1><p>実験道具を読み込んでいます。</p></section>`;
     loadLabRouter().then(async router => {
-      if (token !== labRenderToken || !["lab", "lab-notebook"].includes(parseRoute().page)) return;
+      if (token !== labRenderToken || parseRoute().page !== "lab") return;
       await router.render(route, app, { routeTo, showToast, escapeHtml });
       app.focus({ preventScroll: true });
       window.scrollTo({ top: 0, behavior: "smooth" });
@@ -409,12 +408,12 @@
 
   function render() {
     const route = parseRoute();
-    app.classList.toggle("lab-main", route.page === "lab" || route.page === "lab-notebook");
-    if (route.page !== "lab" && route.page !== "lab-notebook") window.RikaLabRouter?.leave?.();
+    app.classList.toggle("lab-main", route.page === "lab");
+    if (route.page !== "lab") window.RikaLabRouter?.leave?.();
     if (route.page === "unit") renderUnit(route);
     else if (route.page === "review") renderReview();
     else if (route.page === "discoveries") app.innerHTML = window.ScienceGame?.catalog() || "";
-    else if (route.page === "lab" || route.page === "lab-notebook") renderLabRoute(route);
+    else if (route.page === "lab") renderLabRoute(route);
     else renderHome();
     app.focus({ preventScroll: true }); const focusCard = document.querySelector(".activity-card"); if (focusCard) { const headerHeight = document.querySelector(".site-header")?.getBoundingClientRect().height || 0; const targetTop = focusCard.getBoundingClientRect().top + window.scrollY - headerHeight - 14; window.scrollTo({ top: Math.max(0, targetTop), behavior: "smooth" }); } else { window.scrollTo({ top: 0, behavior: "smooth" }); }
   }
@@ -425,7 +424,6 @@
     const route = parseRoute();
     if (target.matches("[data-home]")) routeTo("");
     else if (target.matches("[data-open-labs], [data-lab-home]")) routeTo("lab");
-    else if (target.matches("[data-lab-notebook]")) routeTo("lab/notebook");
     else if (target.dataset.labId) routeTo(`lab/${target.dataset.labId}`);
     else if (target.matches("[data-discoveries]")) routeTo("discoveries");
     else if (target.dataset.unit) routeTo(`unit/${target.dataset.unit}/knowledge/0`);
@@ -457,12 +455,12 @@
   document.querySelector("#settingsButton").addEventListener("click", () => { soundToggle.checked = data.sound; dialog.showModal(); });
   soundToggle.addEventListener("change", () => { data.sound = soundToggle.checked; save(); showToast(data.sound ? "効果音をオンにしました" : "効果音をオフにしました"); });
   document.querySelector("#resetButton").addEventListener("click", () => {
-    if (!confirm("この端末に保存した問題の記録とLABノートを、すべて消しますか？")) return;
+    if (!confirm("この端末に保存した問題の記録を、すべて消しますか？")) return;
     data = defaultData();
     save();
     localStorage.removeItem("rikaLab6.notebook.v1");
     window.RikaLabRouter?.clearAll?.();
-    dialog.close(); showToast("学習記録とLABノートを消しました"); render();
+    dialog.close(); showToast("学習記録を消しました"); render();
   });
   window.addEventListener("hashchange", render);
   render();

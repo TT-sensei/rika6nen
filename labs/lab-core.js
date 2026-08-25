@@ -149,36 +149,17 @@
         <nav class="breadcrumbs" aria-label="現在位置"><button class="text-button" type="button" data-lab-home>LAB一覧</button><span>›</span><span>${esc(m.title)}</span></nav>
         <section class="science-lab" style="--lab-accent:${m.accent || "#1f6d5b"}">
           <header class="lab-titlebar"><div><p class="eyebrow">${esc(m.unit)}</p><h1><span aria-hidden="true">${m.icon || "🔬"}</span> ${esc(m.title)}</h1><p>${esc(m.summary)}</p></div>
-            <div class="lab-title-actions"><button class="secondary-button" type="button" data-lab-notebook>LABノート</button></div>
           </header>
           <div class="lab-mode" role="group" aria-label="実験モード"><button type="button" data-mode="free" aria-pressed="true">自由研究</button><button type="button" data-mode="mission" aria-pressed="false">${esc(m.modeLabel || "探究ミッション")}</button></div>
           <div class="lab-workspace">
             <section class="simulation-column" aria-label="シミュレーション">
               <div class="sim-stage" data-sim-stage></div>
               <div class="sim-readout" data-sim-readout aria-live="polite"></div>
-              <div class="sim-actions"><button type="button" class="secondary-button" data-sim-reset>リセット</button><button type="button" class="secondary-button" data-sim-step>1つ進める</button><button type="button" class="primary-button" data-record-now>この実験を記録</button></div>
+              <div class="sim-actions"><button type="button" class="secondary-button" data-sim-reset>リセット</button><button type="button" class="secondary-button" data-sim-step>1つ進める</button></div>
             </section>
             <aside class="control-panel" data-sim-controls aria-label="条件と操作"></aside>
           </div>
           <p class="model-note"><b>このモデルで単純にしていること：</b> ${esc(m.modelNote || "学習する関係が見えやすいように、大きさや動きを単純に表しています。")}</p>
-          <section class="inquiry-area" aria-label="探究の記録">
-            <div class="inquiry-tabs" role="tablist">
-              <button type="button" role="tab" data-inquiry="prediction" aria-selected="true"><span>1</span>予想</button>
-              <button type="button" role="tab" data-inquiry="record" aria-selected="false"><span>2</span>記録</button>
-              <button type="button" role="tab" data-inquiry="compare" aria-selected="false"><span>3</span>比較</button>
-              <button type="button" role="tab" data-inquiry="consideration" aria-selected="false"><span>4</span>考察</button>
-            </div>
-            <div class="inquiry-panel" data-panel="prediction">
-              <h2>どうなると思う？</h2><p>選んでも、短い文で書いてもOKです。</p>
-              <div class="prediction-chips">${(m.predictionChoices || []).map(choice => `<button type="button" data-prediction-choice="${esc(choice)}" aria-pressed="false">${esc(choice)}</button>`).join("")}</div>
-              <label class="lab-textarea"><span>わたしの予想</span><textarea data-prediction maxlength="500" rows="3" placeholder="〜になると思う。なぜなら…"></textarea></label>
-            </div>
-            <div class="inquiry-panel" data-panel="record" hidden><div data-record-status></div></div>
-            <div class="inquiry-panel" data-panel="compare" hidden><div data-compare></div></div>
-            <div class="inquiry-panel" data-panel="consideration" hidden>
-              <h2>実験から、どんなことが分かった？</h2><label class="lab-textarea"><span>わたしの考察</span><textarea data-consideration maxlength="1000" rows="4" placeholder="実験1と実験2を比べると…"></textarea></label><button class="primary-button" type="button" data-save-consideration>考察をLABノートに保存</button>
-            </div>
-          </section>
           <div class="lab-guide" data-lab-guide role="status"><span aria-hidden="true">🔎</span><p>まずは予想して、条件を1つだけ変えてみよう。</p></div>
         </section>`;
       this.simulation = this.buildSimulation({
@@ -188,29 +169,19 @@
         guide: message => this.guide(message)
       });
       this.bind();
-      this.renderRecordStatus();
       return () => this.destroy();
     }
     bind() {
       const signal = this.abort.signal;
       this.root.addEventListener("click", event => {
         const target = event.target.closest("button"); if (!target) return;
-        if (target.dataset.inquiry) this.openPanel(target.dataset.inquiry);
-        else if (target.dataset.mode) {
+        if (target.dataset.mode) {
           this.root.querySelectorAll("[data-mode]").forEach(button => button.setAttribute("aria-pressed", String(button === target)));
           this.simulation?.setMode?.(target.dataset.mode);
           this.guide(target.dataset.mode === "mission" ? (this.manifest.missionPrompt || "指定された条件で試してみよう。") : "好きな条件で、何度でも試してみよう。");
         } else if (target.matches("[data-sim-reset]")) { this.simulation?.reset?.(); this.guide("最初の条件に戻しました。次は何を変える？"); }
         else if (target.matches("[data-sim-step]")) this.simulation?.step?.();
-        else if (target.matches("[data-record-now]")) this.record();
-        else if (target.dataset.predictionChoice !== undefined) {
-          this.root.querySelectorAll("[data-prediction-choice]").forEach(button => button.setAttribute("aria-pressed", String(button === target)));
-          this.prediction = target.dataset.predictionChoice;
-          this.root.querySelector("[data-prediction]").value = this.prediction;
-        } else if (target.matches("[data-save-consideration]")) this.saveConsideration();
       }, { signal });
-      this.root.querySelector("[data-prediction]").addEventListener("input", event => { this.prediction = event.target.value; }, { signal });
-      this.root.querySelector("[data-consideration]").addEventListener("input", event => { this.consideration = event.target.value; }, { signal });
     }
     openPanel(name) {
       this.root.querySelectorAll("[data-inquiry]").forEach(button => button.setAttribute("aria-selected", String(button.dataset.inquiry === name)));
