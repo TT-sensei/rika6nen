@@ -14,6 +14,8 @@
   let answerState = { selected: null, checked: false, assignments: {}, selectedCard: null };
   let reviewState = null;
   const sessionItems = {};
+  let labLoadPromise = null;
+  let labRenderToken = 0;
 
   function defaultData() {
     return { version: 2, completed: {}, attempts: {}, mistakes: {}, sound: false };
@@ -65,6 +67,8 @@
     if (parts[0] === "unit") return { page: "unit", unitId: parts[1], phase: PHASES[parts[2]] ? parts[2] : "knowledge", index: Math.max(0, Number(parts[3]) || 0) };
     if (parts[0] === "review") return { page: "review" };
     if (parts[0] === "discoveries") return { page: "discoveries" };
+    if (parts[0] === "lab" && parts[1] === "notebook") return { page: "lab-notebook" };
+    if (parts[0] === "lab") return { page: "lab", labId: parts[1] || null };
     return { page: "home" };
   }
 
@@ -78,10 +82,25 @@
       <section class="hero">
         <p class="eyebrow">小学6年生 理科</p>
         <h1>見えないしくみを、<br>証拠から考えよう。</h1>
-        <p>知識を覚えるだけで終わりません。実験や観察の条件を整え、結果を根拠に説明する力を、9つの単元でくり返し育てます。</p>
+        <p>現象を触って条件を変えるLABと、実験・観察を考える9つの単元。結果を比べ、証拠から自分の言葉で説明する力を育てます。</p>
         <div class="overall-progress">
           <div class="progress-label"><span>全体の学習記録</span><span>${progress.done} / ${progress.total}</span></div>
           <div class="progress-track" role="progressbar" aria-label="全体の進み具合" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${progress.percent}"><div class="progress-fill" style="width:${progress.percent}%"></div></div>
+        </div>
+      </section>
+      <section class="lab-entrance" aria-labelledby="labEntranceTitle">
+        <div class="lab-entrance-copy">
+          <p class="eyebrow">SCIENCE LAB</p>
+          <h2 id="labEntranceTitle">触って、変えて、きまりを見つける。</h2>
+          <p>予想したら、条件を動かして何度でも実験。結果をLABノートへ残し、前の実験と比べられます。</p>
+          <div class="lab-entrance-actions">
+            <button class="primary-button" type="button" data-open-labs>LABをひらく</button>
+            <button class="secondary-button" type="button" data-lab-notebook>LABノート</button>
+          </div>
+        </div>
+        <div class="lab-preview" aria-label="公開中のLAB">
+          <button type="button" data-lab-id="lever"><span>⚖️</span><b>てこLAB</b><small>重さと距離を動かす</small></button>
+          <button type="button" data-lab-id="moon"><span>🌗</span><b>月と太陽LAB</b><small>2つの見方を比べる</small></button>
         </div>
       </section>${window.ScienceGame ? window.ScienceGame.panel() : ""}
       <div class="section-heading"><h2>9つの単元</h2><p>学びたい単元を選ぼう</p></div>
@@ -360,11 +379,41 @@
     setTimeout(() => toast.classList.remove("show"), 1800);
   }
 
+  function loadLabRouter() {
+    if (window.RikaLabRouter) return Promise.resolve(window.RikaLabRouter);
+    if (labLoadPromise) return labLoadPromise;
+    labLoadPromise = new Promise((resolve, reject) => {
+      const script = document.createElement("script");
+      script.src = "labs/index.js";
+      script.onload = () => window.RikaLabRouter ? resolve(window.RikaLabRouter) : reject(new Error("LABを読み込めませんでした"));
+      script.onerror = () => reject(new Error("LABを読み込めませんでした"));
+      document.head.append(script);
+    });
+    return labLoadPromise;
+  }
+
+  function renderLabRoute(route) {
+    const token = ++labRenderToken;
+    app.innerHTML = `<section class="lab-loading"><span class="lab-loading-mark" aria-hidden="true">⌛</span><h1>LABを準備しています</h1><p>実験道具を読み込んでいます。</p></section>`;
+    loadLabRouter().then(async router => {
+      if (token !== labRenderToken || !["lab", "lab-notebook"].includes(parseRoute().page)) return;
+      await router.render(route, app, { routeTo, showToast, escapeHtml });
+      app.focus({ preventScroll: true });
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }).catch(() => {
+      if (token !== labRenderToken) return;
+      app.innerHTML = `<section class="empty-state"><h1>LABを読み込めませんでした</h1><p>通信を確認して、もう一度開いてください。これまでの問題と記録はそのままです。</p><button class="primary-button" type="button" data-open-labs>もう一度</button></section>`;
+      labLoadPromise = null;
+    });
+  }
+
   function render() {
     const route = parseRoute();
+    app.classList.toggle("lab-main", route.page === "lab" || route.page === "lab-notebook");
     if (route.page === "unit") renderUnit(route);
     else if (route.page === "review") renderReview();
     else if (route.page === "discoveries") app.innerHTML = window.ScienceGame?.catalog() || "";
+    else if (route.page === "lab" || route.page === "lab-notebook") renderLabRoute(route);
     else renderHome();
     app.focus({ preventScroll: true }); const focusCard = document.querySelector(".activity-card"); if (focusCard) { const headerHeight = document.querySelector(".site-header")?.getBoundingClientRect().height || 0; const targetTop = focusCard.getBoundingClientRect().top + window.scrollY - headerHeight - 14; window.scrollTo({ top: Math.max(0, targetTop), behavior: "smooth" }); } else { window.scrollTo({ top: 0, behavior: "smooth" }); }
   }
@@ -374,6 +423,9 @@
     if (!target) return;
     const route = parseRoute();
     if (target.matches("[data-home]")) routeTo("");
+    else if (target.matches("[data-open-labs], [data-lab-home]")) routeTo("lab");
+    else if (target.matches("[data-lab-notebook]")) routeTo("lab/notebook");
+    else if (target.dataset.labId) routeTo(`lab/${target.dataset.labId}`);
     else if (target.matches("[data-discoveries]")) routeTo("discoveries");
     else if (target.dataset.unit) routeTo(`unit/${target.dataset.unit}/knowledge/0`);
     else if (target.dataset.phase && route.page === "unit") routeTo(`unit/${route.unitId}/${target.dataset.phase}/0`);
@@ -399,12 +451,17 @@
   });
 
   document.querySelector("#homeButton").addEventListener("click", () => routeTo(""));
+  document.querySelector("#labButton").addEventListener("click", () => routeTo("lab"));
   document.querySelector("#reviewButton").addEventListener("click", () => { reviewState = null; routeTo("review"); });
   document.querySelector("#settingsButton").addEventListener("click", () => { soundToggle.checked = data.sound; dialog.showModal(); });
   soundToggle.addEventListener("change", () => { data.sound = soundToggle.checked; save(); showToast(data.sound ? "効果音をオンにしました" : "効果音をオフにしました"); });
   document.querySelector("#resetButton").addEventListener("click", () => {
-    if (!confirm("この端末に保存した学習記録を、すべて消しますか？")) return;
-    data = defaultData(); save(); dialog.close(); showToast("学習記録を消しました"); render();
+    if (!confirm("この端末に保存した問題の記録とLABノートを、すべて消しますか？")) return;
+    data = defaultData();
+    save();
+    localStorage.removeItem("rikaLab6.notebook.v1");
+    window.RikaLabRouter?.clearAll?.();
+    dialog.close(); showToast("学習記録とLABノートを消しました"); render();
   });
   window.addEventListener("hashchange", render);
   render();
