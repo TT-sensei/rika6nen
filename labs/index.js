@@ -31,7 +31,7 @@
     ["body", "人の体LAB", "動物のからだのはたらき", "🫀", "運動量を変えて、心拍・呼吸・血液の流れを見ます。", "#bd4b62"],
     ["environment", "生物と環境LAB", "生物と環境", "🕸️", "生物の数を変え、食物連鎖の変化を見ます。", "#4e7d69"],
     ["earth", "大地LAB", "大地のつくりと変化", "🌋", "水の流れや火山灰で、地層のでき方を見ます。", "#8b6247"]
-  ].forEach(([id,title,unit,icon,summary,accent]) => MANIFESTS[id] = {id,title,unit,icon,summary,accent,script:"labs/extra-labs.js",ready:true});
+  ].forEach(([id,title,unit,icon,summary,accent]) => MANIFESTS[id] = {id,title,unit,icon,summary,accent,script:id === "burning" ? "labs/burning-lab.js" : "labs/extra-labs.js",ready:true});
   const FUTURE = [
     ["🔥", "燃焼LAB", "酸素量と炎"], ["🧪", "水溶液LAB", "性質と変化"],
     ["💡", "電気LAB", "回路と変換"], ["🌿", "植物LAB", "水の通り道"],
