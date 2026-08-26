@@ -400,3 +400,24 @@ main.lab-main { width: min(1400px, calc(100% - 28px)); }
   .science-lab .try-card{display:none}
   .science-lab .lab-workspace{min-height:310px}
 }
+
+/* Home extras: keep the collection area compact and clearly separate from study content. */
+.home-mode-tabs{gap:8px}
+.home-mode-tabs [data-home-tab="labs"]{background:#eaf7f0;border-color:#acd8bd;color:#176044}
+.home-mode-tabs [data-home-tab="units"]{background:#eef4fc;border-color:#b8cbe8;color:#315889}
+.home-mode-tabs [data-home-tab="labs"][aria-selected="true"]{background:#cfeedd;border-color:#50a879;box-shadow:0 0 0 2px #50a87933}
+.home-mode-tabs [data-home-tab="units"][aria-selected="true"]{background:#dce9fa;border-color:#5e86c2;box-shadow:0 0 0 2px #5e86c233}
+.home-mode-panel[data-home-panel="labs"]{background:#f1fbf5;border:1px solid #d0ecda}
+.home-mode-panel[data-home-panel="units"]{background:#f3f7fd;border:1px solid #d7e3f3}
+.home-collection-strip{margin-top:14px;padding:12px 14px;border:1px solid #e1d8c6;border-radius:16px;background:#fffaf1}
+.home-collection-heading{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.home-collection-heading h2{margin:2px 0 0;font-size:1rem;color:#634c32}
+.home-collection-heading .eyebrow{margin:0;color:#a27643}
+.home-collection-row{display:grid;grid-template-columns:repeat(10,minmax(58px,1fr));gap:7px;margin-top:9px}
+.home-collection-badge{display:grid;place-items:center;gap:2px;min-height:67px;padding:5px 3px;border:1px solid color-mix(in srgb,var(--collection-color) 42%,#fff);border-radius:12px;background:color-mix(in srgb,var(--collection-color) 9%,#fff);color:#5a5148;text-decoration:none;transition:transform .15s,box-shadow .15s}
+.home-collection-badge:hover,.home-collection-badge:focus-visible{transform:translateY(-2px);box-shadow:0 4px 12px #6d573022;outline:none}
+.home-collection-badge span{display:grid;place-items:center;width:33px;height:33px;border-radius:50%;background:color-mix(in srgb,var(--collection-color) 18%,#fff);font-size:1.35rem}
+.home-collection-badge b{font-size:.62rem;white-space:nowrap}
+.home-collection-note{margin:8px 0 0;color:#8c7e6c;font-size:.68rem}
+@media(max-width:900px){.home-collection-row{grid-template-columns:repeat(5,minmax(58px,1fr))}}
+@media(max-width:600px){.home-collection-strip{padding:10px}.home-collection-row{grid-template-columns:repeat(5,1fr);gap:5px}.home-collection-badge{min-height:61px}.home-collection-badge b{font-size:.56rem}.home-collection-note{font-size:.62rem}}
