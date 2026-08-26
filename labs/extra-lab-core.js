@@ -15,6 +15,8 @@
 
   function register(id, spec, render) {
     registered.set(id, { spec, render });
+    window.RikaLabSimulations = window.RikaLabSimulations || {};
+    window.RikaLabSimulations[id] = { mount };
   }
 
   function controls(spec,state){return spec.controls.filter(c=>!c.show||c.show(state)).map(c=>c.type==="options"?`<div class="instant-control"><b>${esc(c.label)}</b><div class="instant-options">${c.items.map(([v,label])=>`<button type="button" data-key="${c.key}" data-value="${esc(v)}" aria-pressed="${String(state[c.key])===String(v)}">${esc(label)}</button>`).join("")}</div></div>`:`<label class="instant-range"><span>${esc(c.label)} <output>${esc(state[c.key])}${esc(c.unit)}</output></span><input type="range" data-key="${c.key}" min="${c.min}" max="${c.max}" value="${state[c.key]}"></label>`).join("");}
