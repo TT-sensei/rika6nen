@@ -16,6 +16,7 @@
   const sessionItems = {};
   let labLoadPromise = null;
   let labRenderToken = 0;
+  let homeTab = "labs";
 
   function defaultData() {
     return { version: 2, completed: {}, attempts: {}, mistakes: {}, sound: false };
@@ -84,22 +85,26 @@
       ["environment","🕸","生物と環境LAB","個体数の変化"],["moon","◐","月と太陽LAB","月の満ち欠け"],["earth","🌋","大地LAB","堆積と地層"]
     ];
     app.innerHTML = `
-      <section class="home-hero">
-        <div class="home-hero-copy"><p class="eyebrow">小学6年生 理科</p><h1>答えを当てる前に、<br><em>現象を動かそう。</em></h1><p>てこを傾ける。月を動かす。炎や電気の変化を観察する。理科ラボは、触って試して、きまりを見つける学習室です。</p><div class="home-actions"><button class="primary-button" type="button" data-open-labs>シミュレーターを選ぶ</button><button class="home-link-button" type="button" data-scroll-units>問題で学ぶ</button></div></div>
-        <div class="home-hero-diagram" aria-label="理科ラボでできること"><div class="orbit orbit-one"></div><div class="orbit orbit-two"></div><span class="diagram-sun">☀</span><span class="diagram-earth">●</span><span class="diagram-moon">●</span><b>操作</b><b>観察</b><b>発見</b></div>
-      </section>
-      <section class="home-lab-section" aria-labelledby="homeLabTitle"><div class="home-section-heading"><div><p class="eyebrow">SCIENCE LAB</p><h2 id="homeLabTitle">まずは、触ってみよう</h2><p>シミュレーターは、途中でやめても、何度やり直しても大丈夫。</p></div><button class="secondary-button" type="button" data-open-labs>LAB一覧を見る</button></div>
-        <div class="home-lab-grid all-home-labs">${homeLabs.map(([id,icon,title,summary]) => `<button class="home-lab-card" type="button" data-lab-id="${id}"><span class="home-lab-visual ${id}-visual">${icon}</span><span><small>シミュレーター</small><strong>${title}</strong><b>${summary}</b></span><i>→</i></button>`).join("")}</div>
-      </section>${window.ScienceGame ? window.ScienceGame.panel() : ""}
-      <section class="home-learning-section" id="unit-learning"><div class="home-section-heading"><div><p class="eyebrow">LEARNING MAP</p><h2>問題で確かめる9単元</h2><p>シミュレーターで見つけたことを、問題と考察で整理します。</p></div><div class="home-progress-pill"><b>${progress.percent}%</b><span>全体の学習</span></div></div>
-      <section class="unit-grid" aria-label="単元一覧">
-        ${window.SCIENCE_UNITS.map((unit, index) => `
-          <button class="unit-card" data-unit="${unit.id}" style="${unitStyle(unit)}">
-            <span class="unit-top"><span class="unit-icon" aria-hidden="true">${unit.icon}</span><span class="unit-number">UNIT ${index + 1}</span></span>
-            <h3>${unit.title}</h3><p>${unit.summary}</p>
-            <span class="mini-progress"><span class="progress-track"><span class="progress-fill" style="width:${unitPercent(unit)}%"></span></span><span>${unitPercent(unit)}%</span></span>
-          </button>`).join("")}
-      </section></section>`;
+      <section class="home-dashboard">
+        <header class="home-dashboard-head">
+          <div><p class="eyebrow">小学6年生 理科</p><h1>理科ラボ 6</h1><p>動かして確かめる。問題で整理する。</p></div>
+          <div class="home-progress-pill"><b>${progress.percent}%</b><span>問題の学習</span></div>
+        </header>
+        <div class="home-mode-tabs" role="tablist" aria-label="学び方を選ぶ">
+          <button type="button" role="tab" data-home-tab="labs" aria-selected="${homeTab === "labs"}"><span>🔬</span><b>シミュレーション</b><small>条件を変えて試す</small></button>
+          <button type="button" role="tab" data-home-tab="units" aria-selected="${homeTab === "units"}"><span>✏️</span><b>問題を解く</b><small>知識・実験・考察</small></button>
+        </div>
+        <section class="home-mode-panel" data-home-panel="labs" ${homeTab === "labs" ? "" : "hidden"}>
+          <div class="home-panel-heading"><div><h2>シミュレーションを選ぶ</h2><p>条件を動かすと、結果がすぐ変わります。</p></div><button class="text-button" type="button" data-open-labs>説明つき一覧</button></div>
+          <div class="home-compact-grid" aria-label="シミュレーション一覧">${homeLabs.map(([id,icon,title,summary]) => `<button class="home-compact-card" type="button" data-lab-id="${id}"><span class="home-compact-icon ${id}-visual">${icon}</span><span><strong>${title.replace("LAB", "")}</strong><small>${summary}</small></span><i>›</i></button>`).join("")}</div>
+        </section>
+        <section class="home-mode-panel" data-home-panel="units" ${homeTab === "units" ? "" : "hidden"}>
+          <div class="home-panel-heading"><div><h2>問題に取り組む単元を選ぶ</h2><p>1回3問。途中からでも始められます。</p></div><div class="home-progress-pill"><b>${progress.percent}%</b><span>学習済み</span></div></div>
+          <div class="home-compact-grid home-unit-grid" aria-label="問題の単元一覧">
+            ${window.SCIENCE_UNITS.map((unit, index) => `<button class="home-compact-card home-unit-card" data-unit="${unit.id}" style="${unitStyle(unit)}"><span class="home-compact-icon unit-icon" aria-hidden="true">${unit.icon}</span><span><strong>${unit.title}</strong><small>UNIT ${index + 1}・${unitPercent(unit)}%</small></span><i>›</i></button>`).join("")}
+          </div>
+        </section>
+      </section>`;
   }
 
   function renderUnit(route) {
@@ -412,6 +417,7 @@
     if (!target) return;
     const route = parseRoute();
     if (target.matches("[data-home]")) routeTo("");
+    else if (target.dataset.homeTab) { homeTab = target.dataset.homeTab; renderHome(); }
     else if (target.matches("[data-scroll-units]")) document.querySelector("#unit-learning")?.scrollIntoView({ behavior: "smooth", block: "start" });
     else if (target.matches("[data-open-labs], [data-lab-home]")) routeTo("lab");
     else if (target.dataset.labId) routeTo(`lab/${target.dataset.labId}`);
