@@ -429,3 +429,6 @@ body{background:radial-gradient(circle at 95% 0,#f4d5de 0 14rem,transparent 14re
 .hero{background:linear-gradient(125deg,var(--green-dark),#a64d65)}
 .home-hero{background:radial-gradient(circle at 80% 20%,#c27186 0,#963c58 36%,#642239 100%)}
 button:focus-visible,input:focus-visible{outline-color:rgba(155,64,89,.38)}
+
+/* Apply grade color to navigation and cards */
+:root{--grade-accent:#9b4059;--grade-deep:#6f263e;--grade-soft:#f6dce3;--grade-card:#fff8fa} .site-header,.header-bar{background:var(--grade-deep)!important}.unit-card,.lab-card,.asset-card,.home-collection-badge,.phase-tab,.activity-card,.activity-nav,.unit-banner{border-color:#e6c2cc;background:var(--grade-card)}.unit-card:hover,.lab-card:hover,.asset-card:hover{border-color:var(--grade-accent)}.primary-button,.tab-button.active,.phase-tab[aria-selected="true"]{background:var(--grade-accent)!important;border-color:var(--grade-accent)!important}.unit-banner{border-top-color:var(--grade-accent)}
