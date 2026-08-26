@@ -401,6 +401,92 @@ main.lab-main { width: min(1400px, calc(100% - 28px)); }
   .science-lab .lab-workspace{min-height:310px}
 }
 
+/* Dedicated LABs keep the simulator first. Long written records remain in the
+   question mode; the LAB view concentrates on changing conditions and seeing
+   the phenomenon. */
+.burn-inquiry,
+.burn-records,
+.solution-inquiry,
+.solution-evidence,
+.electricity-record,
+.plant-record,
+.body-record,
+.environment-record,
+.earth-record {
+  display:none !important;
+}
+.electricity-bottom,
+.plant-bottom,
+.body-bottom,
+.environment-bottom,
+.earth-bottom {
+  grid-template-columns:1fr;
+}
+.burning-lab textarea,
+.solutions-lab textarea,
+.electricity-lab textarea,
+.plants-lab textarea,
+.body-lab textarea,
+.environment-lab textarea,
+.earth-lab textarea {
+  display:none;
+}
+
+@media (min-width:761px) {
+  body:has(:is(.burning-lab,.solutions-lab,.electricity-lab,.plants-lab,.body-lab,.environment-lab,.earth-lab)) .site-header {
+    min-height:56px;
+    padding-block:5px;
+  }
+  body:has(:is(.burning-lab,.solutions-lab,.electricity-lab,.plants-lab,.body-lab,.environment-lab,.earth-lab)) .brand-mark {
+    width:38px;
+    border-radius:11px 11px 11px 4px;
+    font-size:1.25rem;
+  }
+  body:has(:is(.burning-lab,.solutions-lab,.electricity-lab,.plants-lab,.body-lab,.environment-lab,.earth-lab)) .brand small {
+    display:none;
+  }
+  body:has(:is(.burning-lab,.solutions-lab,.electricity-lab,.plants-lab,.body-lab,.environment-lab,.earth-lab)) main.lab-main {
+    padding:6px 0 10px;
+  }
+  :is(.burn-title,.solutions-title,.burning-lab .lab-titlebar,.solutions-lab .lab-titlebar,.electricity-lab .lab-titlebar,.plants-lab .lab-titlebar,.body-lab .lab-titlebar,.environment-lab .lab-titlebar,.earth-lab .lab-titlebar) {
+    min-height:48px;
+    margin-bottom:7px;
+    align-items:center;
+  }
+  :is(.burn-title,.solutions-title,.electricity-lab,.plants-lab,.body-lab,.environment-lab,.earth-lab) h1 {
+    font-size:clamp(1.25rem,2vw,1.6rem);
+  }
+  :is(.burn-title,.solutions-title,.electricity-lab .lab-titlebar,.plants-lab .lab-titlebar,.body-lab .lab-titlebar,.environment-lab .lab-titlebar,.earth-lab .lab-titlebar) p:not(.eyebrow) {
+    margin:2px 0 0;
+    font-size:.7rem;
+    line-height:1.3;
+  }
+  :is(.burn-workspace,.solutions-workspace,.electricity-workspace,.plants-workspace,.body-workspace,.environment-workspace,.earth-workspace) {
+    height:min(610px,calc(100dvh - 175px));
+    min-height:420px;
+    gap:9px;
+  }
+  :is(.burn-stage-wrap,.solutions-stage-wrap,.electricity-stage-wrap,.plant-stage-wrap,.body-stage-wrap,.environment-stage-wrap,.earth-stage-wrap) {
+    height:100%;
+    display:grid;
+    grid-template-rows:minmax(0,1fr) auto auto;
+  }
+  :is(.burn-stage,.solutions-stage-wrap>[data-stage]) {
+    min-height:0;
+    overflow:hidden;
+  }
+  :is(.burning-svg,.solutions-svg,.electricity-svg,.plant-svg,.body-svg,.environment-svg,.earth-svg) {
+    width:100%;
+    height:100%;
+    min-height:0;
+  }
+  :is(.burn-panel,.solutions-panel,.electricity-panel,.plants-panel,.body-panel,.environment-panel,.earth-panel) {
+    height:100%;
+    overflow:auto;
+    padding:11px 13px;
+  }
+}
+
 /* Home extras: keep the collection area compact and clearly separate from study content. */
 .home-mode-tabs{gap:8px}
 .home-mode-tabs [data-home-tab="labs"]{background:#eaf7f0;border-color:#acd8bd;color:#176044}
