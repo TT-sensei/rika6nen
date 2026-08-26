@@ -1,6 +1,8 @@
 (() => {
   "use strict";
 
+  const LAB_ASSET_VERSION = "cleanup-20260826-1";
+
   const MANIFESTS = {
     lever: {
       id: "lever",
@@ -51,7 +53,8 @@
     if (loaded.has(src)) return loaded.get(src);
     const promise = new Promise((resolve, reject) => {
       const script = document.createElement("script");
-      script.src = src;
+      const separator = src.includes("?") ? "&" : "?";
+      script.src = `${src}${separator}v=${LAB_ASSET_VERSION}`;
       script.onload = resolve;
       script.onerror = reject;
       document.head.append(script);
