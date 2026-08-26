@@ -34,7 +34,7 @@
     ["environment", "生物と環境LAB", "生物と環境", "🕸️", "生物の数を変え、食物連鎖の変化を見ます。", "#4e7d69"],
     ["earth", "大地LAB", "大地のつくりと変化", "🌋", "水の流れや火山灰で、地層のでき方を見ます。", "#8b6247"]
   ].forEach(([id,title,unit,icon,summary,accent]) => MANIFESTS[id] = {
-    id,title,unit,icon,summary,accent,script:"labs/extra-labs.js",ready:true
+    id,title,unit,icon,summary,accent,script:`labs/${id}-lab.js`,extra:true,ready:true
   });
   const FUTURE = [
     ["🔥", "燃焼LAB", "酸素量と炎"], ["🧪", "水溶液LAB", "性質と変化"],
@@ -92,6 +92,7 @@
     if (!manifest) { root.innerHTML = `<section class="empty-state"><h1>このLABはまだありません</h1><button class="primary-button" type="button" data-lab-home>LAB一覧へ</button></section>`; return; }
     root.innerHTML = `<section class="lab-loading"><span class="lab-loading-mark" aria-hidden="true">${manifest.icon}</span><h1>${manifest.title}を準備しています</h1><p>このLABに必要な実験道具だけを読み込んでいます。</p></section>`;
     const core = await ensureCore();
+    if (manifest.extra) await loadScript("labs/extra-lab-core.js");
     await loadScript(manifest.script);
     const factory = window.RikaLabSimulations?.[manifest.id];
     if (!factory) throw new Error("Simulation factory missing");
