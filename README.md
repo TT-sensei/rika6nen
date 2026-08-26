@@ -6,7 +6,7 @@
 
 ## シミュレーションLAB（全9単元）
 
-LAB一覧から、9単元すべてのシミュレーターを開けます。てこLABと月と太陽LABは専用実装、その他7単元は共通基盤を使う extra-labs.js の条件操作型シミュレーターです。いずれも、条件を変えると結果がその場で変化します。
+LAB一覧から、9単元すべてのシミュレーターを開けます。てこLABと月と太陽LABは専用実装、その他7単元は共通エンジンと単元別ファイルを使う条件操作型シミュレーターです。いずれも、条件を変えると結果がその場で変化します。
 
 ### 専用実装
 
@@ -74,9 +74,16 @@ rika6nen/
 └── labs/
     ├── index.js      # LAB一覧と遅延読み込み
     ├── lab-core.js   # ScienceLab / ExperimentRecord / LabNotebook / Graph / ControlPanel
-    ├── lever-lab.js  # てこLAB
-    ├── moon-lab.js   # 月と太陽LAB
-    └── extra-labs.js # 7単元の共通条件操作型LAB
+    ├── lever-lab.js       # てこLAB
+    ├── moon-lab.js        # 月と太陽LAB
+    ├── extra-lab-core.js  # 7単元共通の条件操作UI・マウント処理
+    ├── burning-lab.js     # 燃焼LAB
+    ├── solutions-lab.js   # 水溶液LAB
+    ├── electricity-lab.js # 電気LAB
+    ├── plants-lab.js      # 植物LAB
+    ├── body-lab.js        # 人の体LAB
+    ├── environment-lab.js # 生物と環境LAB
+    └── earth-lab.js       # 大地LAB
 ```
 
 ## 設計参考と科学モデル
@@ -90,7 +97,7 @@ rika6nen/
 
 ## LABの実装状況
 
-9単元のLABを実装済みです。LAB本体は入口を開くまで読み込まず、選んだシミュレーターに必要な lab-core.js とLABスクリプトだけを遅延読み込みします。現在表示されていない古い個別実装ファイルは残さず、7単元は extra-labs.js に一本化しています。
+9単元のLABを実装済みです。LAB本体は入口を開くまで読み込まず、選んだシミュレーターに必要な lab-core.js、共通エンジン、単元別LABスクリプトだけを遅延読み込みします。7単元は共通処理と単元ごとの実装を分け、修正しやすい構成にしています。
 
 ## 公開方法
 
