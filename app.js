@@ -76,6 +76,26 @@
     return `--unit-color:${unit.color};--unit-pale:${unit.pale}`;
   }
 
+  function collectionStripMarkup() {
+    const collections = [
+      ["animal", "どうぶつ", "🐾", "f6c453"],
+      ["sea-animal", "海のいきもの", "🐳", "6fc4d7"],
+      ["fruit", "くだもの", "🍎", "f29b72"],
+      ["gem", "宝石", "💎", "a77be8"],
+      ["dinosaur", "きょうりゅう", "🦖", "7dbb65"],
+      ["space", "宇宙", "🪐", "7186d8"],
+      ["fantasy", "ファンタジー", "🪽", "d98ab4"],
+      ["insect", "むし", "🦋", "e6b84c"],
+      ["treasure", "たからもの", "🗝️", "d79a62"],
+      ["flower", "花", "🌼", "ee9b9b"]
+    ];
+    return \`<section class="home-collection-strip" aria-labelledby="homeCollections">
+      <div class="home-collection-heading"><div><p class="eyebrow">おまけコレクション</p><h2 id="homeCollections">コレクションバッジ</h2></div><a class="text-button" href="https://tt-sensei.github.io/edu-assets/#/collections/animal" target="_blank" rel="noopener">一覧を見る →</a></div>
+      <div class="home-collection-row">\${collections.map(([id, label, icon, color]) => \`<a class="home-collection-badge" href="https://tt-sensei.github.io/edu-assets/#/collections/\${id}" target="_blank" rel="noopener" style="--collection-color:#\${color}" aria-label="\${label}コレクションを見る"><span aria-hidden="true">\${icon}</span><b>\${label}</b></a>\`).join("")}</div>
+      <p class="home-collection-note">理科の学習の合間に、気になるコレクションをのぞいてみよう。</p>
+    </section>\`;
+  }
+
   function renderHome() {
     const progress = overall();
     const homeLabDetails = {
