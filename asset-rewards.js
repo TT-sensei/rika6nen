@@ -20,10 +20,11 @@
     const n = unlocked();
     const scienceHtml = science.map((x,i) => img(BASE+"badges/science/"+x[0]+"/badge.webp", "理科｜"+x[1], i >= Math.min(n, science.length))).join("");
     const elementHtml = elements.map((x,i) => img(BASE+"elements/"+x+"/level-"+((i%3)+1)+"/badge.webp", "エレメント｜"+x.toUpperCase(), i+science.length >= n)).join("");
-    const collectionBadge = {gem:"amethyst"};
-    const collectionLabels = {gem:"宝石"};
-    const collectionHtml = collections.map(x => { const item = collectionBadge[x] || "badge"; const file = x === "space" ? item : item + "/badge.webp"; const label = collectionLabels[x] || x.toUpperCase(); return "<div class=\"asset-card asset-link\"><img class=\"discovery-badge\" src=\"" + BASE + "collections/" + x + "/common/" + file + "\" alt=\"コレクション｜" + label + "\" loading=\"lazy\"><b>コレクション｜"+label+"</b><small>軽量版バッジを見る</small></div>"; }).join("");
-    return "<section class=\"asset-page\"><button class=\"text-button\" data-assets-home>単元一覧へ</button><p class=\"eyebrow\">SCIENCE ASSET BOOK</p><h1>理科のおまけ図鑑</h1><p>理科の学びにぴったりなバッジを中心に、エレメントやコレクションも集めよう。解放数："+n+"</p><h2>理科バッジ</h2><div class=\"asset-grid\">"+scienceHtml+"</div><h2>エレメント</h2><div class=\"asset-grid\">"+elementHtml+"</div><h2>コレクション</h2><div class=\"asset-grid\">"+collectionHtml+"</div></section>";
+    const collectionSeries = "gem";
+    const collectionLabel = "宝石";
+    const collectionBadges = [{rarity:"common",id:"amethyst",label:"アメジスト"},{rarity:"common",id:"aquamarine",label:"アクアマリン"},{rarity:"common",id:"citrine",label:"シトリン"},{rarity:"common",id:"emerald",label:"エメラルド"},{rarity:"common",id:"garnet",label:"ガーネット"},{rarity:"common",id:"ruby",label:"ルビー"},{rarity:"common",id:"sapphire",label:"サファイア"},{rarity:"common",id:"topaz",label:"トパーズ"},{rarity:"rare",id:"moonstone",label:"ムーンストーン"},{rarity:"rare",id:"opal",label:"オパール"},{rarity:"rare",id:"peridot",label:"ペリドット"},{rarity:"rare",id:"tourmaline",label:"トルマリン"},{rarity:"super-rare",id:"black-opal",label:"ブラックオパール"},{rarity:"super-rare",id:"diamond",label:"ダイヤモンド"},{rarity:"secret",id:"prism-crystal",label:"プリズムクリスタル"}];
+    const collectionHtml = collectionBadges.map((badge,i) => img(BASE+"collections/"+collectionSeries+"/"+badge.rarity+"/"+badge.id+"/badge.webp", "コレクション｜"+badge.label, i >= Math.min(n, collectionBadges.length))).join("");
+    return "<section class=\"asset-page\"><button class=\"text-button\" data-assets-home>単元一覧へ</button><p class=\"eyebrow\">SCIENCE ASSET BOOK</p><h1>理科のおまけ図鑑</h1><p>理科の学びにぴったりなバッジを中心に、エレメントやコレクションも集めよう。解放数："+n+"</p><h2>理科バッジ</h2><div class=\"asset-grid\">"+scienceHtml+"</div><h2>エレメント</h2><div class=\"asset-grid\">"+elementHtml+"</div><h2>コレクション｜"+collectionLabel+"</h2><div class=\"asset-grid\">"+collectionHtml+"</div></section>";
   }
   if (!window.ScienceGame) return;
   const originalPanel = window.ScienceGame.panel;
