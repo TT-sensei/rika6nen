@@ -421,3 +421,11 @@ main.lab-main { width: min(1400px, calc(100% - 28px)); }
 .home-collection-note{margin:8px 0 0;color:#8c7e6c;font-size:.68rem}
 @media(max-width:900px){.home-collection-row{grid-template-columns:repeat(5,minmax(58px,1fr))}}
 @media(max-width:600px){.home-collection-strip{padding:10px}.home-collection-row{grid-template-columns:repeat(5,1fr);gap:5px}.home-collection-badge{min-height:61px}.home-collection-badge b{font-size:.56rem}.home-collection-note{font-size:.62rem}}
+
+/* Grade theme: 6th grade / bright burgundy */
+:root{--ink:#45252f;--muted:#80616a;--canvas:#fbf0f2;--green:#9b4059;--green-dark:#6f263e;--green-pale:#f6dce3;--line:#e7cbd2;--shadow:0 10px 28px rgba(111,38,62,.13)}
+body{background:radial-gradient(circle at 95% 0,#f4d5de 0 14rem,transparent 14rem),var(--canvas)}
+.site-header{background:var(--green-dark)}
+.hero{background:linear-gradient(125deg,var(--green-dark),#a64d65)}
+.home-hero{background:radial-gradient(circle at 80% 20%,#c27186 0,#963c58 36%,#642239 100%)}
+button:focus-visible,input:focus-visible{outline-color:rgba(155,64,89,.38)}
