@@ -254,3 +254,55 @@ main.lab-main { width: min(1400px, calc(100% - 28px)); }
 /* instant simulators: condition -> immediate result */
 .instant-lab .lab-workspace{align-items:start}.instant-panel{max-height:none}.instant-control,.instant-range{display:grid;gap:7px;margin-top:16px}.instant-control>b,.instant-range>span{font-size:.82rem;font-weight:800}.instant-range>span{display:flex;justify-content:space-between;gap:12px}.instant-range output{color:var(--lab-accent);font-weight:900}.instant-range input{width:100%;min-height:34px;accent-color:var(--lab-accent);cursor:pointer}.instant-options{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px}.instant-options button,.instant-presets button{min-height:42px;border:1px solid var(--line);border-radius:10px;background:#fff;padding:7px 9px;cursor:pointer;font-size:.76rem;font-weight:800}.instant-options button[aria-pressed=true]{border-color:var(--lab-accent);background:color-mix(in srgb,var(--lab-accent) 12%,#fff);color:var(--lab-accent)}.instant-presets{margin-top:20px;padding-top:16px;border-top:1px solid var(--line)}.instant-presets>b{font-size:.82rem}.instant-presets>div{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}.instant-presets button{min-height:36px;border-radius:999px}.instant-result{margin-top:14px}.instant-metric{padding:11px 13px;border-radius:12px;border-top:4px solid var(--lab-accent);background:#eef5f4}.instant-metric span,.instant-metric b,.instant-metric small{display:block}.instant-metric span{color:var(--muted);font-size:.72rem}.instant-metric b{margin-top:4px;font-size:1.02rem}.instant-metric small{margin-top:3px;color:var(--muted);font-size:.7rem}.instant-lab .model-note{margin-top:12px}.instant-lab .extra-svg{min-height:360px}
 @media(max-width:760px){.instant-lab .extra-readout-grid{grid-template-columns:1fr}.instant-lab .extra-svg{min-height:260px}.instant-options{grid-template-columns:repeat(2,minmax(0,1fr))}}
+
+/* Keep the instant LAB's main controls inside one landscape screen. */
+@media (min-width:761px) {
+  body:has(.instant-lab) .site-header{min-height:56px;padding-block:5px}
+  body:has(.instant-lab) .brand-mark{width:38px;border-radius:11px 11px 11px 4px;font-size:1.25rem}
+  body:has(.instant-lab) .brand b{font-size:1rem}
+  body:has(.instant-lab) .brand small{display:none}
+  body:has(.instant-lab) .header-button,
+  body:has(.instant-lab) .icon-button{min-height:38px}
+  body:has(.instant-lab) main.lab-main{padding:6px 0 8px}
+  body:has(.instant-lab) .breadcrumbs{margin-bottom:3px;font-size:.72rem}
+  .instant-lab .lab-titlebar{min-height:48px;padding:0 3px 5px;align-items:center}
+  .instant-lab .lab-titlebar .eyebrow{margin-bottom:2px;font-size:.66rem}
+  .instant-lab .lab-titlebar h1{font-size:clamp(1.2rem,2vw,1.55rem)}
+  .instant-lab .lab-titlebar p:not(.eyebrow){margin:2px 0 0;font-size:.72rem}
+  .instant-lab .lab-workspace{height:min(600px,calc(100dvh - 176px));min-height:410px;gap:9px;grid-template-columns:minmax(0,1fr) 310px}
+  .instant-lab .simulation-column{height:100%;display:grid;grid-template-rows:minmax(0,1fr) auto auto;border-radius:15px}
+  .instant-lab .sim-stage{min-height:0;overflow:hidden}
+  .instant-lab .extra-svg{width:100%;height:100%;min-height:0;max-height:none}
+  .instant-lab .sim-readout{min-height:0;padding:7px 10px}
+  .instant-lab .extra-readout-grid{gap:5px;margin:0}
+  .instant-lab .instant-metric{min-height:50px;padding:6px 9px;border-top-width:3px}
+  .instant-lab .instant-metric span{font-size:.64rem}
+  .instant-lab .instant-metric b{margin-top:2px;font-size:.86rem}
+  .instant-lab .sim-actions{min-height:43px;padding:4px 10px 7px;gap:6px}
+  .instant-lab .sim-actions button{min-height:36px;padding:0 12px;border-radius:9px;font-size:.72rem}
+  .instant-lab .instant-panel{height:100%;overflow:hidden;padding:10px 12px;border-radius:15px}
+  .instant-lab .control-heading .eyebrow{margin-bottom:2px;font-size:.62rem}
+  .instant-lab .control-heading h2{font-size:1rem}
+  .instant-lab .control-heading>p:not(.eyebrow){margin:2px 0 5px;font-size:.67rem;line-height:1.3}
+  .instant-lab .instant-control,
+  .instant-lab .instant-range{gap:2px;margin-top:6px}
+  .instant-lab .instant-control>b,
+  .instant-lab .instant-range>span{font-size:.69rem}
+  .instant-lab .instant-range input{min-height:20px;height:20px}
+  .instant-lab .instant-options{gap:3px}
+  .instant-lab .instant-options button{min-height:31px;padding:3px 5px;border-radius:7px;font-size:.66rem}
+  .instant-lab .instant-presets{margin-top:8px;padding-top:7px}
+  .instant-lab .instant-presets>b{font-size:.69rem}
+  .instant-lab .instant-presets>div{gap:3px;margin-top:4px}
+  .instant-lab .instant-presets button{min-height:28px;padding:3px 7px;font-size:.63rem}
+  .instant-lab .try-card{margin-top:7px;padding:7px 9px;border-left-width:4px}
+  .instant-lab .try-card b{font-size:.7rem}
+  .instant-lab .try-card p{margin-top:2px;font-size:.65rem;line-height:1.3}
+  .instant-lab .instant-result{min-height:32px;margin-top:5px;padding:5px 10px;border-radius:9px}
+  .instant-lab .instant-result span{font-size:.95rem}
+  .instant-lab .instant-result p{font-size:.69rem}
+  .instant-lab .model-note{display:none}
+}
+
+@media (min-width:761px) and (max-width:980px){.instant-lab .lab-workspace{grid-template-columns:minmax(0,1fr) 285px}}
+@media (min-width:761px) and (max-height:700px){.instant-lab .lab-titlebar p:not(.eyebrow),.instant-lab .try-card{display:none}.instant-lab .lab-workspace{min-height:360px}}
