@@ -78,12 +78,20 @@
 
   function renderHome() {
     const progress = overall();
-    const homeLabs = [
-      ["burning","🔥","燃焼LAB","酸素と炎の変化"],["solutions","🧪","水溶液LAB","色・蒸発・粒子"],
-      ["lever","⚖","てこLAB","支点とおもり"],["electricity","💡","電気LAB","回路とエネルギー"],
-      ["plants","🌿","植物LAB","水の通り道"],["body","🫀","人の体LAB","呼吸と血液"],
-      ["environment","🕸","生物と環境LAB","個体数の変化"],["moon","◐","月と太陽LAB","月の満ち欠け"],["earth","🌋","大地LAB","堆積と地層"]
-    ];
+    const homeLabDetails = {
+      burning: ["🔥", "燃焼LAB", "酸素と炎の変化"],
+      solutions: ["🧪", "水溶液LAB", "色・蒸発・粒子"],
+      lever: ["⚖", "てこLAB", "支点とおもり"],
+      electricity: ["💡", "電気LAB", "回路とエネルギー"],
+      body: ["🫀", "人の体LAB", "呼吸と血液"],
+      plants: ["🌿", "植物LAB", "水の通り道"],
+      environment: ["🕸", "生物と環境LAB", "個体数の変化"],
+      moon: ["◐", "月と太陽LAB", "月の満ち欠け"],
+      earth: ["🌋", "大地LAB", "堆積と地層"]
+    };
+    const homeLabs = (window.SCIENCE_UNIT_ORDER || Object.keys(homeLabDetails))
+      .map(id => [id, ...(homeLabDetails[id] || [])])
+      .filter(item => item.length === 4);
     app.innerHTML = `
       <section class="home-dashboard">
         <header class="home-dashboard-head">

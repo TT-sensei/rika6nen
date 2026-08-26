@@ -40,6 +40,10 @@
     ["🫀", "人の体LAB", "呼吸と血液"], ["🕸️", "生物と環境LAB", "個体数の変化"],
     ["🌋", "大地LAB", "長い時間の変化"]
   ];
+  const UNIT_ORDER = window.SCIENCE_UNIT_ORDER || [
+    "burning", "solutions", "lever", "electricity", "body",
+    "plants", "environment", "moon", "earth"
+  ];
   const loaded = new Map();
   let activeCleanup = null;
 
@@ -69,7 +73,7 @@
         <div><p class="eyebrow">SCIENCE LAB</p><h1>条件を変えると、何が変わる？</h1><p>答えを当てる場所ではありません。条件を動かして、現象の変化を見つける実験室です。</p></div>
       </section>
       <section class="lab-library" aria-labelledby="readyLabs"><div class="section-heading"><h2 id="readyLabs">実験できるLAB</h2><p>好きな方から始めよう</p></div>
-        <div class="lab-card-grid">${Object.values(MANIFESTS).map(lab => `
+        <div class="lab-card-grid">${UNIT_ORDER.map(id => MANIFESTS[id]).filter(Boolean).map(lab => `
           <button class="lab-card" type="button" data-lab-id="${lab.id}" style="--lab-accent:${lab.accent}">
             <span class="lab-card-icon" aria-hidden="true">${lab.icon}</span><span class="lab-card-tag">${lab.unit}</span>
             <h2>${lab.title}</h2><p>${lab.summary}</p><b>実験を始める →</b>

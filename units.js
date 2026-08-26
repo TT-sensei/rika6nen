@@ -235,3 +235,13 @@ const EXTRA_SIX = {
   }
 };
 window.SCIENCE_UNITS.forEach(unit => { const extra=EXTRA_SIX[unit.id]; if (!extra) return; Object.entries(extra).forEach(([phase,items]) => unit[phase].push(...items)); });
+
+// 入口の「シミュレーション」と「問題を解く」で共有する単元順。
+// 単元データの定義順が変わっても、表示順はこの順でそろえる。
+window.SCIENCE_UNIT_ORDER = [
+  "burning", "solutions", "lever", "electricity", "body",
+  "plants", "environment", "moon", "earth"
+];
+window.SCIENCE_UNITS = window.SCIENCE_UNIT_ORDER
+  .map(id => window.SCIENCE_UNITS.find(unit => unit.id === id))
+  .filter(Boolean);
