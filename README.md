@@ -85,26 +85,18 @@ rika6nen/
 ├── asset-rewards.js
 ├── labs/
 │   ├── index.js
-│   ├── lab-core.js           # 本格LAB基盤、記録、グラフ
-│   ├── lever-lab.js          # てこLAB
-│   ├── moon-lab.js           # 月と太陽LAB
-│   ├── burning-lab.js        # 燃焼LAB
-│   ├── solutions-lab.js      # 水溶液LAB
-│   ├── electricity-lab.js    # 電気LAB
-│   ├── plants-lab.js         # 植物LAB
-│   ├── body-lab.js           # 人の体LAB
-│   ├── environment-lab.js    # 生物と環境LAB
-│   └── earth-lab.js          # 大地LAB
+│   ├── lab-core.js
+│   ├── lever-lab.js
+│   ├── moon-lab.js
+│   ├── burning-lab.js
+│   ├── solutions-lab.js
+│   ├── electricity-lab.js
+│   ├── plants-lab.js
+│   ├── body-lab.js
+│   ├── environment-lab.js
+│   └── earth-lab.js
 └── README.md
 ~~~
-
-- index.html：ページの土台と共通スクリプトの読み込み
-- app.js：単元一覧、問題判定、進捗保存、まとめチェック、LABの入口
-- units.js：9単元の問題データ
-- labs/index.js：LAB一覧と遅延読み込み
-- labs/lab-core.js：てこ・月と太陽で使う記録、ミッション、グラフの共通基盤
-- labs/*-lab.js：各単元の実験台、条件モデル、アニメーション、操作
-- gamification.js / asset-rewards.js：研究ランク、発見、報酬表示
 
 ## 教材内容の基準と参考
 
@@ -128,3 +120,17 @@ GitHubの Settings → Pages で、main ブランチのルートを公開元に�
 ## 公開ページ
 
 [GitHub Pagesで開く](https://tt-sensei.github.io/rika6nen/)
+
+## ライセンス・利用について
+
+学校・家庭での学習目的で無料で利用できます。
+
+このリポジトリのコードおよびTT-senseiオリジナルの教材・画像を、許可なく有料教材、有料サービス、販売商品として利用することはできません。アプリを複製して別サービスとして販売すること、オリジナル素材を素材集として再配布・販売することも許可していません。
+
+外部ライブラリ、フォント、画像、参考プロジェクト等の第三者素材には、それぞれの権利者・ライセンスの条件が適用されます。
+
+Software code and original educational content in this repository are licensed under the PolyForm Noncommercial License 1.0.0.
+
+https://polyformproject.org/licenses/noncommercial/1.0.0/
+
+Copyright © 2026 TT-sensei.
